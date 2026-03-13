@@ -148,18 +148,20 @@ export async function incrementViewCount(articleId: string): Promise<void> {
 
 /**
  * Full-text search across articles using PostgreSQL tsvector.
+ * Falls back to ILIKE title search if tsvector returns no results.
  */
 export async function searchArticles(
   query: string,
   limit: number = 20
 ): Promise<ArticleWithAuthor[]> {
   try {
-    const tsQuery = query
-      .trim()
+    const trimmed = query.trim();
+    const tsQuery = trimmed
       .split(/\s+/)
       .filter(Boolean)
       .join(" & ");
 
+    // Primary: tsvector full-text search
     const result = await db
       .select()
       .from(articles)
@@ -175,7 +177,28 @@ export async function searchArticles(
       )
       .limit(limit);
 
-    return result.map((row) => ({
+    if (result.length > 0) {
+      return result.map((row) => ({
+        ...row.articles,
+        author: row.authors,
+      }));
+    }
+
+    // Fallback: ILIKE title search
+    const fallback = await db
+      .select()
+      .from(articles)
+      .innerJoin(authors, eq(articles.authorId, authors.id))
+      .where(
+        and(
+          eq(articles.isPublished, true),
+          ilike(articles.title, `%${trimmed}%`)
+        )
+      )
+      .orderBy(desc(articles.publishedAt))
+      .limit(limit);
+
+    return fallback.map((row) => ({
       ...row.articles,
       author: row.authors,
     }));

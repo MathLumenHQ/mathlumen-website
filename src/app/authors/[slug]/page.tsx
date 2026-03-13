@@ -41,15 +41,15 @@ export default async function AuthorPage({ params }: AuthorPageProps) {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-      {/* Author header */}
-      <div className="flex flex-col md:flex-row items-start gap-8 mb-12">
+      {/* Hero */}
+      <div className="flex flex-col md:flex-row items-start gap-8 mb-12 pb-8 border-b border-gold/[0.18]">
         {author.avatarUrl && (
           <Image
             src={author.avatarUrl}
             alt={author.name}
             width={120}
             height={120}
-            className="rounded-full"
+            className="rounded-full shrink-0"
           />
         )}
         <div>
@@ -67,8 +67,11 @@ export default async function AuthorPage({ params }: AuthorPageProps) {
                 href={`https://twitter.com/${author.twitterHandle.replace("@", "")}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gold hover:text-gold-light transition-colors duration-200 font-mono"
+                className="flex items-center gap-1.5 text-muted hover:text-gold transition-colors duration-200 font-mono"
               >
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                </svg>
                 {author.twitterHandle}
               </a>
             )}
@@ -77,11 +80,17 @@ export default async function AuthorPage({ params }: AuthorPageProps) {
                 href={author.websiteUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gold hover:text-gold-light transition-colors duration-200 font-mono"
+                className="flex items-center gap-1.5 text-muted hover:text-gold transition-colors duration-200 font-mono"
               >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 003 12c0-1.605.42-3.113 1.157-4.418" />
+                </svg>
                 Website
               </a>
             )}
+            <span className="text-muted font-mono">
+              {articles.length} article{articles.length !== 1 ? "s" : ""}
+            </span>
           </div>
         </div>
       </div>

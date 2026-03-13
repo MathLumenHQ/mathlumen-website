@@ -7,7 +7,8 @@
       "Bash(cd \"D:/python/MathLumen/mathlumenV4\" && pnpm add @radix-ui/react-dialog @radix-ui/react-tabs @radix-ui/react-visually-hidden katex @types/katex 2>&1)",
       "Bash(pnpm run:*)",
       "Bash(cd \"D:/python/MathLumen/mathlumenV4\" && pnpm add next-mdx-remote remark-math rehype-katex rehype-pretty-code remark-gfm rehype-slug unified remark-parse mdast-util-to-string 2>&1)",
-      "Bash(cd \"D:/python/MathLumen/mathlumenV4\" && pnpm add -D @types/mdast 2>&1)"
+      "Bash(cd \"D:/python/MathLumen/mathlumenV4\" && pnpm add -D @types/mdast 2>&1)",
+      "Bash(cd \"D:/python/MathLumen/mathlumenV4\" && npx tsx --env-file=.env seed/fix-images.ts 2>&1)"
     ]
   }
 }

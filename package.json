@@ -12,7 +12,7 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "seed": "tsx seed/index.ts"
+    "seed": "tsx --env-file=.env seed/index.ts"
   },
   "dependencies": {
     "@mdx-js/loader": "3.1.0",

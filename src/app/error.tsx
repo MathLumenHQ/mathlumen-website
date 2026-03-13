@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 
 interface ErrorProps {
@@ -16,15 +17,27 @@ export default function Error({ error, reset }: ErrorProps) {
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center">
       <p className="text-gold font-mono text-lg mb-4">Error</p>
-      <h1 className="font-display text-4xl md:text-5xl font-bold text-paper mb-6">
+      <h1 className="font-display text-4xl md:text-5xl font-bold text-paper mb-4">
         Something went wrong
       </h1>
-      <p className="text-muted text-lg mb-10 max-w-md mx-auto">
-        An unexpected error occurred. Our equations didn&apos;t quite balance out this time.
+      <p className="text-muted/60 font-mono text-sm italic mb-6">
+        An unexpected exception in the proof
       </p>
-      <Button onClick={reset} variant="primary" size="lg">
-        Try again
-      </Button>
+      <p className="text-muted text-lg mb-10 max-w-md mx-auto">
+        Our equations didn&apos;t quite balance out this time.
+        Please try again or return to safer ground.
+      </p>
+      <div className="flex items-center justify-center gap-4">
+        <Button onClick={reset} variant="gold" size="lg">
+          Try again
+        </Button>
+        <Link
+          href="/"
+          className="px-6 py-3 text-sm text-gold border border-gold/20 hover:border-gold/40 transition-colors duration-200"
+        >
+          Back to home
+        </Link>
+      </div>
     </div>
   );
 }

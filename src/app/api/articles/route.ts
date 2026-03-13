@@ -6,6 +6,7 @@ import type { ApiResponse, ArticleWithAuthor, PaginatedResponse } from "@/schema
 /**
  * GET /api/articles
  * Fetch paginated articles with optional category, tag, and sort filters.
+ * Cache-Control: s-maxage=60, stale-while-revalidate=120
  */
 export async function GET(
   request: NextRequest
@@ -31,7 +32,14 @@ export async function GET(
 
     const result = await getArticles(parsed.data);
 
-    return NextResponse.json({ success: true, data: result });
+    return NextResponse.json(
+      { success: true, data: result },
+      {
+        headers: {
+          "Cache-Control": "s-maxage=60, stale-while-revalidate=120",
+        },
+      }
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : "Internal server error";
     return NextResponse.json(

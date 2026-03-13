@@ -4,8 +4,11 @@ export const SITE_NAME = "MathLumen";
 export const SITE_DESCRIPTION =
   "A scholarly mathematics publication exploring the beauty, history, and applications of mathematics.";
 export const SITE_URL = "https://mathlumen.com";
-export const TWITTER_HANDLE = "@TheMathLumen";
-export const GITHUB_URL = "https://github.com/mathlumen";
+export const TWITTER_HANDLE = "@MathLumen";
+export const GITHUB_URL = "https://github.com/MathLumen";
+export const YOUTUBE_URL = "https://www.youtube.com/@TheMathLumen";
+export const LINKEDIN_URL = "https://www.linkedin.com/company/mathlumen";
+export const TWITTER_URL = "https://x.com/MathLumen";
 
 export const CATEGORIES = [
   { value: "history", label: "History", description: "The stories behind mathematical breakthroughs" },
