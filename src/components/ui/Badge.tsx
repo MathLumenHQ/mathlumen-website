@@ -1,30 +1,57 @@
 import type { HTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
+import type { Category } from "@/schema/types";
 
-type BadgeVariant = "default" | "gold" | "outline";
+type BadgeSize = "sm" | "md";
 
 interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
-  variant?: BadgeVariant;
+  /** The article category — determines color scheme */
+  category?: Category;
+  /** Size preset */
+  size?: BadgeSize;
 }
 
-const variantStyles: Record<BadgeVariant, string> = {
-  default: "bg-paper/10 text-paper/70",
-  gold: "bg-gold/15 text-gold-light border border-gold/20",
-  outline: "border border-paper/20 text-paper/60",
+/** Category-specific color mapping */
+const categoryStyles: Record<Category, string> = {
+  history: "border-gold/40 text-gold bg-gold/8",
+  research: "border-[#4a9eff]/40 text-[#4a9eff] bg-[#4a9eff]/8",
+  applied: "border-[#4aff9e]/40 text-[#4aff9e] bg-[#4aff9e]/8",
+  "ai-ml": "border-[#9e4aff]/40 text-[#9e4aff] bg-[#9e4aff]/8",
+  essay: "border-paper/20 text-muted bg-paper/5",
+};
+
+const sizeStyles: Record<BadgeSize, string> = {
+  sm: "px-2 py-px text-[10px]",
+  md: "px-2.5 py-0.5 text-xs",
 };
 
 /**
- * Small badge/tag component for categories and labels.
+ * Badge component for categories, tags, and labels.
+ * When a `category` prop is provided, it uses the editorial color scheme.
+ * Otherwise renders a neutral tag style.
  */
-export function Badge({ className, variant = "default", ...props }: BadgeProps) {
+export function Badge({
+  className,
+  category,
+  size = "md",
+  children,
+  ...props
+}: BadgeProps) {
+  const colorStyle = category
+    ? categoryStyles[category]
+    : "border-gold/20 text-gold-light bg-gold/8";
+
   return (
     <span
       className={cn(
-        "inline-flex items-center px-2.5 py-0.5 text-xs font-mono uppercase tracking-wider rounded-sm",
-        variantStyles[variant],
+        "inline-flex items-center font-mono uppercase tracking-wider rounded-none border leading-tight",
+        sizeStyles[size],
+        colorStyle,
         className
       )}
       {...props}
-    />
+    >
+      {children}
+    </span>
   );
 }

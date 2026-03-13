@@ -3,6 +3,7 @@ import { getArticles } from "@/lib/queries/articles";
 import { formatDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/Badge";
 import { createMetadata } from "@/lib/metadata";
+import type { Category } from "@/schema/types";
 
 export const metadata = createMetadata({
   title: "Archive",
@@ -71,7 +72,7 @@ export default async function ArchivePage() {
                         {article.title}
                       </Link>
                       <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="outline" className="text-[10px]">
+                        <Badge category={article.category as Category} size="sm">
                           {article.category}
                         </Badge>
                         <span className="text-xs text-muted">{article.author.name}</span>

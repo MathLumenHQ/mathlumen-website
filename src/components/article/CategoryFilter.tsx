@@ -1,48 +1,69 @@
 "use client";
 
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import * as Tabs from "@radix-ui/react-tabs";
 import { cn } from "@/lib/utils";
 import { CATEGORIES } from "@/lib/constants";
 
 /**
- * Category filter pills for the articles listing page.
+ * Horizontal category filter tabs for article listings.
+ * Uses Radix Tabs for keyboard accessibility.
+ * Syncs with URL search params (?category=research).
+ * Horizontal scroll on mobile.
  */
 export function CategoryFilter() {
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const activeCategory = searchParams.get("category");
+  const activeCategory = searchParams.get("category") ?? "all";
+
+  function handleValueChange(value: string) {
+    if (value === "all") {
+      router.push("/articles");
+    } else {
+      router.push(`/articles?category=${value}`);
+    }
+  }
 
   return (
-    <div className="flex flex-wrap gap-2" role="tablist" aria-label="Filter by category">
-      <Link
-        href="/articles"
-        className={cn(
-          "px-4 py-1.5 text-sm font-mono uppercase tracking-wider rounded-sm transition-colors duration-200",
-          !activeCategory
-            ? "bg-gold text-ink"
-            : "text-muted hover:text-paper border border-gold/20 hover:border-gold/40"
-        )}
-        role="tab"
-        aria-selected={!activeCategory}
+    <Tabs.Root
+      value={activeCategory}
+      onValueChange={handleValueChange}
+    >
+      <Tabs.List
+        className="flex gap-2 overflow-x-auto pb-1 scrollbar-none"
+        aria-label="Filter articles by category"
       >
-        All
-      </Link>
-      {CATEGORIES.map((cat) => (
-        <Link
-          key={cat.value}
-          href={`/articles?category=${cat.value}`}
+        <Tabs.Trigger
+          value="all"
           className={cn(
-            "px-4 py-1.5 text-sm font-mono uppercase tracking-wider rounded-sm transition-colors duration-200",
-            activeCategory === cat.value
-              ? "bg-gold text-ink"
-              : "text-muted hover:text-paper border border-gold/20 hover:border-gold/40"
+            "shrink-0 px-4 py-1.5 text-sm font-mono uppercase tracking-wider rounded-none",
+            "transition-colors duration-200 border",
+            "focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2",
+            activeCategory === "all"
+              ? "bg-gold text-ink border-gold font-semibold"
+              : "text-muted border-gold/[0.18] hover:text-paper hover:border-gold/40"
           )}
-          role="tab"
-          aria-selected={activeCategory === cat.value}
         >
-          {cat.label}
-        </Link>
-      ))}
-    </div>
+          All
+        </Tabs.Trigger>
+
+        {CATEGORIES.map((cat) => (
+          <Tabs.Trigger
+            key={cat.value}
+            value={cat.value}
+            className={cn(
+              "shrink-0 px-4 py-1.5 text-sm font-mono uppercase tracking-wider rounded-none",
+              "transition-colors duration-200 border",
+              "focus-visible:outline-2 focus-visible:outline-gold focus-visible:outline-offset-2",
+              activeCategory === cat.value
+                ? "bg-gold text-ink border-gold font-semibold"
+                : "text-muted border-gold/[0.18] hover:text-paper hover:border-gold/40"
+            )}
+          >
+            {cat.label}
+          </Tabs.Trigger>
+        ))}
+      </Tabs.List>
+    </Tabs.Root>
   );
 }

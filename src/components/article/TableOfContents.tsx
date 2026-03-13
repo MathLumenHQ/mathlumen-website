@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
 
 interface TocItem {
@@ -9,25 +9,37 @@ interface TocItem {
   level: number;
 }
 
+interface TableOfContentsProps {
+  /** Pre-computed headings. If omitted, scans the DOM on mount. */
+  headings?: TocItem[];
+}
+
 /**
- * Auto-generated table of contents that highlights the current section.
- * Scans the article for h2 and h3 headings.
+ * Table of contents sidebar for article pages.
+ * - Fixed on desktop (lg+)
+ * - Active heading highlighted with gold left border
+ * - Smooth scrolls to heading on click
+ * - Tracks scroll position via IntersectionObserver
  */
-export function TableOfContents() {
-  const [headings, setHeadings] = useState<TocItem[]>([]);
+export function TableOfContents({ headings: propHeadings }: TableOfContentsProps) {
+  const [headings, setHeadings] = useState<TocItem[]>(propHeadings ?? []);
   const [activeId, setActiveId] = useState<string>("");
 
+  // Auto-scan headings from article DOM if not provided via props
   useEffect(() => {
+    if (propHeadings) return;
+
     const article = document.querySelector("article");
     if (!article) return;
 
     const elements = article.querySelectorAll("h2, h3");
     const items: TocItem[] = Array.from(elements).map((el) => {
       if (!el.id) {
-        el.id = el.textContent
-          ?.toLowerCase()
-          .replace(/[^\w\s-]/g, "")
-          .replace(/\s+/g, "-") ?? "";
+        el.id =
+          el.textContent
+            ?.toLowerCase()
+            .replace(/[^\w\s-]/g, "")
+            .replace(/\s+/g, "-") ?? "";
       }
       return {
         id: el.id,
@@ -37,8 +49,9 @@ export function TableOfContents() {
     });
 
     setHeadings(items);
-  }, []);
+  }, [propHeadings]);
 
+  // Track active heading via IntersectionObserver
   useEffect(() => {
     if (headings.length === 0) return;
 
@@ -61,6 +74,20 @@ export function TableOfContents() {
     return () => observer.disconnect();
   }, [headings]);
 
+  const handleClick = useCallback(
+    (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+      e.preventDefault();
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+        setActiveId(id);
+        // Update URL hash without jumping
+        window.history.replaceState(null, "", `#${id}`);
+      }
+    },
+    []
+  );
+
   if (headings.length === 0) return null;
 
   return (
@@ -72,12 +99,13 @@ export function TableOfContents() {
         <a
           key={heading.id}
           href={`#${heading.id}`}
+          onClick={(e) => handleClick(e, heading.id)}
           className={cn(
-            "block text-sm py-1 transition-colors duration-200 border-l-2",
+            "block text-sm py-1 transition-all duration-200 border-l-2",
             heading.level === 3 ? "pl-6" : "pl-3",
             activeId === heading.id
               ? "text-gold border-l-gold"
-              : "text-muted hover:text-paper border-l-transparent"
+              : "text-muted hover:text-paper border-l-transparent hover:border-l-gold/30"
           )}
         >
           {heading.text}

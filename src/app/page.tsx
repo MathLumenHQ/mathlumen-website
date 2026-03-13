@@ -21,7 +21,7 @@ export default async function HomePage() {
       <section className="relative noise-overlay">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
           <div className="max-w-3xl">
-            <Badge variant="gold" className="mb-6">
+            <Badge className="mb-6">
               A Scholarly Mathematics Publication
             </Badge>
             <h1 className="font-display text-4xl md:text-6xl font-bold text-paper leading-[1.1] mb-6">
@@ -70,7 +70,7 @@ export default async function HomePage() {
               <ArticleCard
                 key={article.id}
                 article={article}
-                featured={idx === 0}
+                layout={idx === 0 ? "featured" : "vertical"}
               />
             ))}
           </div>

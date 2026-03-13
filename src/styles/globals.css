@@ -354,3 +354,86 @@ body {
     display: none !important;
   }
 }
+
+/* ─── Skeleton Shimmer Animation ─────────────────────────────────────── */
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--color-gold) 6%, transparent) 40%,
+    color-mix(in srgb, var(--color-gold) 10%, transparent) 50%,
+    color-mix(in srgb, var(--color-gold) 6%, transparent) 60%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 2s ease-in-out infinite;
+}
+
+/* ─── Logo Pulse Glow Animation ──────────────────────────────────────── */
+
+@keyframes logo-pulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 2px color-mix(in srgb, var(--color-gold) 30%, transparent));
+  }
+  50% {
+    filter: drop-shadow(0 0 8px color-mix(in srgb, var(--color-gold) 50%, transparent));
+  }
+}
+
+.logo-pulse {
+  animation: logo-pulse 3s ease-in-out infinite;
+}
+
+/* ─── Newsletter Checkmark Animation ─────────────────────────────────── */
+
+@keyframes check-circle-draw {
+  from {
+    stroke-dashoffset: 166;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes check-mark-draw {
+  from {
+    stroke-dashoffset: 48;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.check-circle {
+  stroke-dasharray: 166;
+  stroke-dashoffset: 166;
+  animation: check-circle-draw 0.6s ease-out forwards;
+}
+
+.check-mark {
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  animation: check-mark-draw 0.4s ease-out 0.3s forwards;
+}
+
+/* ─── Scrollbar-None Utility ─────────────────────────────────────────── */
+
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}

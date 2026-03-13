@@ -11,6 +11,7 @@ import { TableOfContents } from "@/components/article/TableOfContents";
 import { ArticleCard } from "@/components/article/ArticleCard";
 import { Separator } from "@/components/ui/Separator";
 import { ViewTracker } from "./ViewTracker";
+import type { Category } from "@/schema/types";
 import type { Metadata } from "next";
 
 interface ArticlePageProps {
@@ -61,7 +62,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         <header className="mb-10">
           <div className="flex items-center gap-3 mb-4">
             <Link href={`/category/${article.category}`}>
-              <Badge variant="gold">{article.category}</Badge>
+              <Badge category={article.category as Category}>{article.category}</Badge>
             </Link>
             {article.readTimeMinutes && (
               <span className="text-xs text-muted font-mono">
@@ -138,7 +139,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           <div className="mt-12 pt-8 border-t border-gold/10">
             <div className="flex flex-wrap gap-2">
               {article.tags.map((tag) => (
-                <Badge key={tag} variant="outline">
+                <Badge key={tag}>
                   {tag}
                 </Badge>
               ))}
