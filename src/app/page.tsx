@@ -77,8 +77,27 @@ const CATEGORY_ROWS: { category: Category; label: string }[] = [
    ═══════════════════════════════════════════════════════════════════════ */
 
 export default function HomePage() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "MathLumen",
+    url: "https://mathlumen.com",
+    description:
+      "A scholarly mathematics publication exploring the beauty, history, and applications of mathematics.",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: "https://mathlumen.com/search?q={search_term_string}",
+      "query-input": "required name=search_term_string",
+    },
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
       {/* ── Section 1: HERO ─────────────────────────────────────────── */}
       <section className="relative min-h-[calc(100vh-4rem)] flex items-center overflow-hidden">
         {/* Background: radial gradient + math grid + noise */}

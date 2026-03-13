@@ -66,8 +66,38 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
   const articleUrl = `${SITE_URL}/articles/${slug}`;
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: article.title,
+    description: article.excerpt,
+    author: {
+      "@type": "Person",
+      name: article.author.name,
+      url: `${SITE_URL}/authors/${article.author.slug}`,
+    },
+    datePublished: article.publishedAt
+      ? new Date(article.publishedAt).toISOString()
+      : undefined,
+    publisher: {
+      "@type": "Organization",
+      name: "MathLumen",
+      url: SITE_URL,
+      logo: {
+        "@type": "ImageObject",
+        url: `${SITE_URL}/og-default.png`,
+      },
+    },
+    mainEntityOfPage: articleUrl,
+    image: article.coverImageUrl ?? undefined,
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <ProgressBar />
       <ViewTracker articleId={article.id} />
 

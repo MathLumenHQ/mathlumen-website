@@ -44,7 +44,7 @@ export function ArticleCard({
           <Link href={articleHref} className="block relative h-80 md:h-96 overflow-hidden">
             <Image
               src={article.coverImageUrl}
-              alt=""
+              alt={article.title}
               fill
               className="object-cover transition-transform duration-500 group-hover:scale-105"
               sizes="(max-width: 768px) 100vw, 66vw"
@@ -111,7 +111,7 @@ export function ArticleCard({
             <div className="relative h-48 md:h-full min-h-[160px]">
               <Image
                 src={article.coverImageUrl}
-                alt=""
+                alt={article.title}
                 fill
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
                 sizes="260px"
@@ -162,7 +162,7 @@ export function ArticleCard({
           <div className="relative h-48">
             <Image
               src={article.coverImageUrl}
-              alt=""
+              alt={article.title}
               fill
               className="object-cover transition-transform duration-500 group-hover:scale-105"
               sizes="(max-width: 768px) 100vw, 33vw"
