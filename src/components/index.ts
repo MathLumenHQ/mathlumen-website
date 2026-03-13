@@ -20,6 +20,10 @@ export { ArticleCard } from "./article/ArticleCard";
 export { ProgressBar } from "./article/ProgressBar";
 export { TableOfContents } from "./article/TableOfContents";
 export { CategoryFilter } from "./article/CategoryFilter";
+export { SortSelect } from "./article/SortSelect";
+export { SearchButton } from "./article/SearchButton";
+export { ShareButtons } from "./article/ShareButtons";
+export { CiteDialog } from "./article/CiteDialog";
 
 /* ─── Forms ──────────────────────────────────────────────────────────── */
 export { NewsletterForm } from "./forms/NewsletterForm";

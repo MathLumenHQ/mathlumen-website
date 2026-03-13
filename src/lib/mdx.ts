@@ -1,5 +1,16 @@
 import fs from "node:fs";
 import path from "node:path";
+import type { ReactElement } from "react";
+import { compileMDX } from "next-mdx-remote/rsc";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import rehypePrettyCode from "rehype-pretty-code";
+import remarkGfm from "remark-gfm";
+import rehypeSlug from "rehype-slug";
+import { unified } from "unified";
+import remarkParse from "remark-parse";
+import { toString } from "mdast-util-to-string";
+import type { Heading, Root } from "mdast";
 
 const CONTENT_DIR = path.join(process.cwd(), "content", "articles");
 
@@ -15,16 +26,79 @@ interface ArticleFrontmatter {
   coverImageUrl?: string;
 }
 
-interface MDXArticle {
+interface TocHeading {
+  id: string;
+  text: string;
+  level: number;
+}
+
+interface CompiledArticle {
+  content: ReactElement;
   frontmatter: ArticleFrontmatter;
-  content: string;
+  headings: TocHeading[];
 }
 
 /**
- * Read and parse an MDX article file by slug.
- * Extracts frontmatter from the export const metadata block and returns raw content.
+ * Compile MDX source string into a React element with full remark/rehype pipeline.
  */
-export async function getArticleContent(slug: string): Promise<MDXArticle | null> {
+async function compileMdxContent(source: string) {
+  return compileMDX<ArticleFrontmatter>({
+    source,
+    options: {
+      parseFrontmatter: true,
+      mdxOptions: {
+        remarkPlugins: [remarkGfm, remarkMath],
+        rehypePlugins: [
+          rehypeSlug,
+          rehypeKatex as never,
+          [
+            rehypePrettyCode as never,
+            {
+              theme: "github-dark",
+              defaultLang: "python",
+            },
+          ],
+        ],
+      },
+    },
+  });
+}
+
+/**
+ * Extract h2 and h3 headings from raw MDX/markdown source for table of contents.
+ */
+export function extractHeadings(source: string): TocHeading[] {
+  const tree = unified().use(remarkParse).parse(source);
+  const headings: TocHeading[] = [];
+
+  function visit(node: Root | Root["children"][number]) {
+    if (node.type === "heading") {
+      const heading = node as Heading;
+      if (heading.depth === 2 || heading.depth === 3) {
+        const text = toString(heading);
+        const id = text
+          .toLowerCase()
+          .replace(/[^\w\s-]/g, "")
+          .replace(/\s+/g, "-");
+        headings.push({ id, text, level: heading.depth });
+      }
+    }
+    if ("children" in node && Array.isArray(node.children)) {
+      for (const child of node.children) {
+        visit(child as Root["children"][number]);
+      }
+    }
+  }
+
+  visit(tree);
+  return headings;
+}
+
+/**
+ * Read and compile an MDX article file by slug.
+ * Returns compiled React content, frontmatter, and extracted headings for ToC.
+ */
+export async function getArticleContent(slug: string): Promise<CompiledArticle | null> {
   try {
     const filePath = path.join(CONTENT_DIR, `${slug}.mdx`);
 
@@ -33,12 +107,19 @@ export async function getArticleContent(slug: string): Promise<MDXArticle | null
     }
 
     const raw = fs.readFileSync(filePath, "utf-8");
-    const { frontmatter, content } = parseMDX(raw);
 
-    return { frontmatter, content };
+    // Extract headings from the body (after frontmatter)
+    const frontmatterEnd = raw.indexOf("---", 3);
+    const body = frontmatterEnd !== -1 ? raw.slice(frontmatterEnd + 3).trim() : raw;
+    const headings = extractHeadings(body);
+
+    // Compile MDX
+    const { content, frontmatter } = await compileMdxContent(raw);
+
+    return { content, frontmatter, headings };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
-    console.error(`Failed to read article "${slug}": ${message}`);
+    console.error(`Failed to compile article "${slug}": ${message}`);
     return null;
   }
 }
@@ -61,68 +142,4 @@ export function listArticleSlugs(): string[] {
     console.error(`Failed to list article slugs: ${message}`);
     return [];
   }
-}
-
-/**
- * Parse MDX content, separating YAML-style frontmatter from body content.
- */
-function parseMDX(raw: string): { frontmatter: ArticleFrontmatter; content: string } {
-  const frontmatterRegex = /^---\s*\n([\s\S]*?)\n---\s*\n/;
-  const match = raw.match(frontmatterRegex);
-
-  if (!match) {
-    throw new Error("No frontmatter found in MDX file");
-  }
-
-  const frontmatterBlock = match[1];
-  const content = raw.slice(match[0].length).trim();
-
-  const frontmatter = parseYAMLFrontmatter(frontmatterBlock);
-
-  return { frontmatter, content };
-}
-
-/**
- * Simple YAML frontmatter parser for article metadata.
- */
-function parseYAMLFrontmatter(block: string): ArticleFrontmatter {
-  const lines = block.split("\n");
-  const data: Record<string, string | string[] | number> = {};
-
-  for (const line of lines) {
-    const colonIndex = line.indexOf(":");
-    if (colonIndex === -1) continue;
-
-    const key = line.slice(0, colonIndex).trim();
-    let value = line.slice(colonIndex + 1).trim();
-
-    // Remove surrounding quotes
-    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
-      value = value.slice(1, -1);
-    }
-
-    // Parse arrays in bracket notation: [tag1, tag2]
-    if (value.startsWith("[") && value.endsWith("]")) {
-      data[key] = value
-        .slice(1, -1)
-        .split(",")
-        .map((item) => item.trim().replace(/^["']|["']$/g, ""));
-    } else if (!isNaN(Number(value)) && value !== "") {
-      data[key] = Number(value);
-    } else {
-      data[key] = value;
-    }
-  }
-
-  return {
-    title: String(data.title ?? ""),
-    subtitle: data.subtitle ? String(data.subtitle) : undefined,
-    slug: String(data.slug ?? ""),
-    category: String(data.category ?? ""),
-    excerpt: String(data.excerpt ?? ""),
-    publishedAt: String(data.publishedAt ?? ""),
-    readTimeMinutes: Number(data.readTimeMinutes ?? 5),
-    tags: Array.isArray(data.tags) ? data.tags : [],
-    coverImageUrl: data.coverImageUrl ? String(data.coverImageUrl) : undefined,
-  };
 }
