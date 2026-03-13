@@ -1,0 +1,29 @@
+[
+  {
+    "name": "Dr. Elena Vasquez",
+    "slug": "elena-vasquez",
+    "bio": "Associate Professor of Pure Mathematics at MIT. Elena's research focuses on algebraic geometry and number theory. She has published over forty papers and is a recipient of the Sloan Research Fellowship. Her writing bridges the gap between rigorous mathematics and accessible exposition.",
+    "avatarUrl": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&h=200&fit=crop&crop=face",
+    "email": "elena@mathlumen.com",
+    "twitterHandle": "@ElenaVMath",
+    "websiteUrl": "https://math.mit.edu/~evasquez"
+  },
+  {
+    "name": "Prof. James Okafor",
+    "slug": "james-okafor",
+    "bio": "James is a computational mathematician at Stanford specializing in numerical methods for PDEs and scientific computing. He leads the Applied Math & Computation Lab and has contributed to open-source spectral method libraries used worldwide.",
+    "avatarUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face",
+    "email": "james@mathlumen.com",
+    "twitterHandle": "@JOkaforMath",
+    "websiteUrl": "https://stanford.edu/~jokafor"
+  },
+  {
+    "name": "Dr. Anika Patel",
+    "slug": "anika-patel",
+    "bio": "Anika is a research scientist at DeepMind working at the intersection of mathematics and artificial intelligence. She holds a PhD in mathematical statistics from Cambridge and writes about the theoretical foundations of machine learning.",
+    "avatarUrl": "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=200&h=200&fit=crop&crop=face",
+    "email": "anika@mathlumen.com",
+    "twitterHandle": "@AnikaPatelAI",
+    "websiteUrl": "https://scholar.google.com/citations?user=anikapatel"
+  }
+]
