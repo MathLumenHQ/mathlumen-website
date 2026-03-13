@@ -437,3 +437,93 @@ body {
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }
+
+/* ─── Hero Staggered Fade-Up Animation ───────────────────────────────── */
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-up {
+  opacity: 0;
+  animation: fade-up 0.7s ease-out forwards;
+}
+
+.fade-up-delay-1 { animation-delay: 100ms; }
+.fade-up-delay-2 { animation-delay: 200ms; }
+.fade-up-delay-3 { animation-delay: 300ms; }
+.fade-up-delay-4 { animation-delay: 400ms; }
+.fade-up-delay-5 { animation-delay: 500ms; }
+
+/* ─── Hero Scroll Indicator Bounce ───────────────────────────────────── */
+
+@keyframes bounce-down {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(8px);
+    opacity: 1;
+  }
+}
+
+.bounce-down {
+  animation: bounce-down 2s ease-in-out infinite;
+}
+
+/* ─── Floating Math Symbols ──────────────────────────────────────────── */
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-12px) rotate(3deg); }
+}
+
+@keyframes float-medium {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(-2deg); }
+}
+
+@keyframes float-fast {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-6px) rotate(2deg); }
+}
+
+.float-slow   { animation: float-slow 6s ease-in-out infinite; }
+.float-medium { animation: float-medium 4.5s ease-in-out infinite; }
+.float-fast   { animation: float-fast 3.5s ease-in-out infinite; }
+
+/* ─── Math Grid Background ───────────────────────────────────────────── */
+
+.math-grid {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--color-gold) 4%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--color-gold) 4%, transparent) 1px, transparent 1px);
+  background-size: 80px 80px;
+}
+
+/* ─── Pillar Card Hover Bar ──────────────────────────────────────────── */
+
+.pillar-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--color-gold);
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 0.3s ease;
+}
+
+.pillar-card:hover::before {
+  transform: scaleY(1);
+}

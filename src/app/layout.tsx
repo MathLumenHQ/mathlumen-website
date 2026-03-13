@@ -3,19 +3,24 @@ import { Playfair_Display, Crimson_Pro, DM_Mono } from "next/font/google";
 import { Navigation } from "@/components/layout/Navigation";
 import { Footer } from "@/components/layout/Footer";
 import { SearchDialog } from "@/components/forms/SearchDialog";
-import { SITE_NAME, SITE_DESCRIPTION, SITE_URL } from "@/lib/constants";
+import { createMetadata } from "@/lib/metadata";
+import { SITE_NAME, SITE_DESCRIPTION } from "@/lib/constants";
 import "@/styles/globals.css";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
+  weight: ["400", "700", "900"],
   variable: "--font-display",
   display: "swap",
+  preload: true,
 });
 
 const crimson = Crimson_Pro({
   subsets: ["latin"],
+  weight: ["300", "400", "600"],
   variable: "--font-body",
   display: "swap",
+  preload: true,
 });
 
 const dmMono = DM_Mono({
@@ -23,32 +28,18 @@ const dmMono = DM_Mono({
   weight: ["300", "400", "500"],
   variable: "--font-mono",
   display: "swap",
+  preload: true,
 });
 
 export const metadata: Metadata = {
+  ...createMetadata({
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+    path: "/",
+  }),
   title: {
     default: SITE_NAME,
     template: `%s | ${SITE_NAME}`,
-  },
-  description: SITE_DESCRIPTION,
-  metadataBase: new URL(SITE_URL),
-  alternates: {
-    types: {
-      "application/rss+xml": "/api/rss",
-    },
-  },
-  openGraph: {
-    type: "website",
-    siteName: SITE_NAME,
-    locale: "en_US",
-  },
-  twitter: {
-    card: "summary_large_image",
-    creator: "@TheMathLumen",
-  },
-  robots: {
-    index: true,
-    follow: true,
   },
 };
 
@@ -63,7 +54,6 @@ export default function RootLayout({
       className={`${playfair.variable} ${crimson.variable} ${dmMono.variable}`}
     >
       <head>
-        {/* KaTeX CSS for MathFormula component */}
         <link
           rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/katex@0.16.38/dist/katex.min.css"
@@ -71,10 +61,21 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen flex flex-col bg-ink text-paper font-body antialiased">
+        {/* Skip to main content — sr-only, visible on focus */}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[200] focus:px-4 focus:py-2 focus:bg-gold focus:text-ink focus:font-semibold focus:rounded-none focus:outline-none"
+        >
+          Skip to main content
+        </a>
+
         <Navigation />
         <SearchDialog />
-        {/* pt-16 offsets the fixed navigation bar */}
-        <main className="flex-1 pt-16">{children}</main>
+
+        <main id="main-content" className="flex-1 pt-16">
+          {children}
+        </main>
+
         <Footer />
       </body>
     </html>

@@ -4,7 +4,8 @@
       "Bash(cd \"D:/python/MathLumen/mathlumenV4\" && mkdir -p src/app/articles/\\\\[slug\\\\] src/app/category/\\\\[category\\\\] src/app/authors/\\\\[slug\\\\] src/app/about src/app/search src/app/newsletter src/app/archive src/app/api/articles src/app/api/subscribe src/app/api/search src/app/api/rss src/components/ui src/components/layout src/components/article src/components/forms src/components/brand src/lib/queries src/schema src/actions src/styles content/articles drizzle seed)",
       "Bash(cd \"D:/python/MathLumen/mathlumenV4\" && pnpm run check-types 2>&1)",
       "Bash(cd \"D:/python/MathLumen/mathlumenV4\" && pnpm install 2>&1)",
-      "Bash(cd \"D:/python/MathLumen/mathlumenV4\" && pnpm add @radix-ui/react-dialog @radix-ui/react-tabs @radix-ui/react-visually-hidden katex @types/katex 2>&1)"
+      "Bash(cd \"D:/python/MathLumen/mathlumenV4\" && pnpm add @radix-ui/react-dialog @radix-ui/react-tabs @radix-ui/react-visually-hidden katex @types/katex 2>&1)",
+      "Bash(pnpm run:*)"
     ]
   }
 }
