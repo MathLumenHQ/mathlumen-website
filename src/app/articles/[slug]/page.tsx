@@ -87,7 +87,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       url: SITE_URL,
       logo: {
         "@type": "ImageObject",
-        url: `${SITE_URL}/og-default.png`,
+        url: `${SITE_URL}/images/og-default.svg`,
       },
     },
     mainEntityOfPage: articleUrl,

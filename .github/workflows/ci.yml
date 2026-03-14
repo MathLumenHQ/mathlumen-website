@@ -1,0 +1,50 @@
+name: MathLumen CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    name: Type Check · Lint · Build
+    runs-on: ubuntu-latest
+
+    env:
+      # Required by env.ts validation at build time
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DIRECT_URL: ${{ secrets.DATABASE_URL }}
+      NEXT_PUBLIC_APP_URL: https://mathlumen.com
+      NEXT_PUBLIC_SITE_NAME: MathLumen
+      # ImageKit (optional — build still works without real keys)
+      NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT: ${{ secrets.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT }}
+      IMAGEKIT_PUBLIC_KEY: ${{ secrets.IMAGEKIT_PUBLIC_KEY }}
+      IMAGEKIT_PRIVATE_KEY: ${{ secrets.IMAGEKIT_PRIVATE_KEY }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type check
+        run: pnpm run check-types
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Build
+        run: pnpm run build

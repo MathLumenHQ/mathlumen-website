@@ -3,6 +3,8 @@ import { getAuthorBySlug, getAuthorArticles } from "@/lib/queries/authors";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { ArticleCard } from "@/components/article/ArticleCard";
 import { createMetadata } from "@/lib/metadata";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { SITE_URL } from "@/lib/constants";
 import type { Metadata } from "next";
 
 interface AuthorPageProps {
@@ -39,7 +41,23 @@ export default async function AuthorPage({ params }: AuthorPageProps) {
 
   const articles = await getAuthorArticles(author.id);
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: author.name,
+    description: author.bio ?? undefined,
+    url: `${SITE_URL}/authors/${author.slug}`,
+    image: author.avatarUrl ?? undefined,
+    sameAs: [
+      author.twitterHandle ? `https://twitter.com/${author.twitterHandle.replace("@", "")}` : undefined,
+      author.linkedinUrl ?? undefined,
+      author.websiteUrl ?? undefined,
+    ].filter(Boolean),
+  };
+
   return (
+    <>
+    <JsonLd data={jsonLd} />
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       {/* Hero */}
       <div className="flex flex-col md:flex-row items-start gap-8 mb-12 pb-8 border-b border-gold/[0.18]">
@@ -125,5 +143,6 @@ export default async function AuthorPage({ params }: AuthorPageProps) {
         <p className="text-muted text-lg">No published articles yet.</p>
       )}
     </div>
+    </>
   );
 }

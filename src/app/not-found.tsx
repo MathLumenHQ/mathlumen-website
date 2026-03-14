@@ -1,6 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Logo } from "@/components/brand/Logo";
 import { MathFormula } from "@/components/brand/MathFormula";
+import { createMetadata } from "@/lib/metadata";
+
+export const metadata: Metadata = createMetadata({
+  title: "Page Not Found",
+  description: "The page you are looking for does not exist. Explore MathLumen's articles on mathematics, AI, and scientific computing.",
+  path: "/404",
+});
 
 export default function NotFound() {
   return (
