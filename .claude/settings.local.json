@@ -11,7 +11,9 @@
       "Bash(cd \"D:/python/MathLumen/mathlumenV4\" && npx tsx --env-file=.env seed/fix-images.ts 2>&1)",
       "Bash(pnpm add:*)",
       "Bash(pnpm test:*)",
-      "Bash(git -C \"D:/python/MathLumen/mathlumenV4\" add -A && git -C \"D:/python/MathLumen/mathlumenV4\" commit -m \"Phase 6 complete\")"
+      "Bash(git -C \"D:/python/MathLumen/mathlumenV4\" add -A && git -C \"D:/python/MathLumen/mathlumenV4\" commit -m \"Phase 6 complete\")",
+      "Bash(cd:*)",
+      "WebSearch"
     ]
   }
 }

@@ -28,6 +28,7 @@ async function seed() {
           "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&h=200&fit=crop&crop=face",
         email: "elena@mathlumen.com",
         twitterHandle: "@ElenaVMath",
+        linkedinUrl: "https://linkedin.com/in/elena-vasquez",
         websiteUrl: "https://math.mit.edu/~evasquez",
       },
       {
@@ -38,6 +39,7 @@ async function seed() {
           "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face",
         email: "james@mathlumen.com",
         twitterHandle: "@JOkaforMath",
+        linkedinUrl: "https://linkedin.com/in/james-okafor",
         websiteUrl: "https://stanford.edu/~jokafor",
       },
       {
@@ -48,6 +50,7 @@ async function seed() {
           "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=200&h=200&fit=crop&crop=face",
         email: "anika@mathlumen.com",
         twitterHandle: "@AnikaPatelAI",
+        linkedinUrl: "https://linkedin.com/in/anika-patel",
         websiteUrl: "https://scholar.google.com/citations?user=anikapatel",
       },
     ])

@@ -11,6 +11,7 @@ import { unified } from "unified";
 import remarkParse from "remark-parse";
 import { toString } from "mdast-util-to-string";
 import type { Heading, Root } from "mdast";
+import { MdxImage } from "@/components/article/MdxImage";
 
 const CONTENT_DIR = path.join(process.cwd(), "content", "articles");
 
@@ -41,9 +42,14 @@ interface CompiledArticle {
 /**
  * Compile MDX source string into a React element with full remark/rehype pipeline.
  */
+const mdxComponents = {
+  img: MdxImage as never,
+};
+
 async function compileMdxContent(source: string) {
   return compileMDX<ArticleFrontmatter>({
     source,
+    components: mdxComponents,
     options: {
       parseFrontmatter: true,
       mdxOptions: {

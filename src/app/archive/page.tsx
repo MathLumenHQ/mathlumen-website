@@ -50,6 +50,13 @@ export default async function ArchivePage() {
         <SearchButton />
       </div>
 
+      {grouped.size === 0 ? (
+        <div className="text-center py-20">
+          <p className="font-display text-xl text-muted italic">
+            Archive will populate as we publish.
+          </p>
+        </div>
+      ) : (
       <div className="space-y-12">
         {Array.from(grouped.entries()).map(([key, articles]) => {
           const [year, month] = key.split("-");
@@ -110,6 +117,7 @@ export default async function ArchivePage() {
           );
         })}
       </div>
+      )}
     </div>
   );
 }

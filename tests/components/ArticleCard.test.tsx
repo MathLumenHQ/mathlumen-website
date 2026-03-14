@@ -29,6 +29,7 @@ const mockArticle: ArticleWithAuthor = {
     avatarUrl: null,
     email: null,
     twitterHandle: null,
+    linkedinUrl: null,
     websiteUrl: null,
     createdAt: new Date("2025-01-01"),
   },

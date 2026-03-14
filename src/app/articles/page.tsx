@@ -6,6 +6,7 @@ import { CategoryFilter } from "@/components/article/CategoryFilter";
 import { SortSelect } from "@/components/article/SortSelect";
 import { SearchButton } from "@/components/article/SearchButton";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { NewsletterForm } from "@/components/forms/NewsletterForm";
 import { createMetadata } from "@/lib/metadata";
 import type { Category } from "@/schema/types";
 
@@ -101,9 +102,18 @@ export default async function ArticlesPage({ searchParams }: ArticlesPageProps) 
         </div>
       ) : (
         <div className="text-center py-20">
-          <p className="text-muted text-lg">
-            No articles found. Check back soon!
+          <h2 className="font-display text-2xl font-bold text-paper mb-3">
+            No articles published yet
+          </h2>
+          <p className="text-muted text-lg max-w-md mx-auto mb-8">
+            We&apos;re working on our first publications. Check back soon or
+            subscribe to our newsletter.
           </p>
+          <div className="max-w-md mx-auto">
+            <Suspense fallback={<Skeleton className="h-20 w-full" />}>
+              <NewsletterForm />
+            </Suspense>
+          </div>
         </div>
       )}
 

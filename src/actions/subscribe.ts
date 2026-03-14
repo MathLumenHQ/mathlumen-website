@@ -14,7 +14,7 @@ export async function subscribeAction(
   try {
     const raw = {
       email: formData.get("email"),
-      name: formData.get("name"),
+      name: formData.get("name") ?? undefined,
     };
 
     const parsed = subscribeRequestSchema.safeParse(raw);

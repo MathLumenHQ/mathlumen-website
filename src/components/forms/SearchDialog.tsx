@@ -168,6 +168,7 @@ export function SearchDialog() {
                 autoFocus
                 aria-label="Search articles"
                 role="combobox"
+                aria-controls="search-results-listbox"
                 aria-expanded={results.length > 0}
                 aria-activedescendant={
                   activeIndex >= 0 ? `search-result-${activeIndex}` : undefined
@@ -182,6 +183,7 @@ export function SearchDialog() {
             <div
               ref={resultsRef}
               className="max-h-[60vh] overflow-y-auto"
+              id="search-results-listbox"
               role="listbox"
             >
               {/* Loading */}

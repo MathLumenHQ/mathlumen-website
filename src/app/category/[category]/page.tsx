@@ -104,9 +104,21 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
         </div>
       ) : (
         <div className="text-center py-20">
-          <p className="text-muted text-lg">
-            No articles in this category yet. Check back soon!
+          <p className="font-display text-xl text-paper mb-2">
+            No articles in this category yet.
           </p>
+          <p className="text-muted text-lg mb-8">Explore other topics:</p>
+          <div className="flex flex-wrap justify-center gap-3">
+            {VALID_CATEGORIES.filter((c) => c !== category).map((c) => (
+              <Link
+                key={c}
+                href={`/category/${c}`}
+                className="px-4 py-2 text-sm border border-gold/20 text-gold hover:border-gold/40 hover:bg-gold/[0.03] transition-colors duration-200"
+              >
+                {CATEGORY_LABELS[c]}
+              </Link>
+            ))}
+          </div>
         </div>
       )}
 

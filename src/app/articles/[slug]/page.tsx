@@ -9,6 +9,8 @@ import { formatDate } from "@/lib/utils";
 import { SITE_URL } from "@/lib/constants";
 import { Badge } from "@/components/ui/Badge";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import { getPlaceholderUrl } from "@/lib/image-utils";
 import { ProgressBar } from "@/components/article/ProgressBar";
 import { TableOfContents } from "@/components/article/TableOfContents";
 import { ArticleCard } from "@/components/article/ArticleCard";
@@ -207,13 +209,14 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             {/* Cover image */}
             {article.coverImageUrl && (
               <div className="relative h-64 md:h-96 mb-10 -mx-4 sm:mx-0">
-                <Image
+                <OptimizedImage
                   src={article.coverImageUrl}
                   alt={article.title}
                   fill
                   className="object-cover sm:rounded-md"
                   priority
-                  sizes="(max-width: 768px) 100vw, 720px"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 75vw, 800px"
+                  fallbackSrc={getPlaceholderUrl(article.category)}
                 />
               </div>
             )}
@@ -271,6 +274,16 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                         className="text-xs text-muted hover:text-gold transition-colors duration-200"
                       >
                         {article.author.twitterHandle}
+                      </a>
+                    )}
+                    {article.author.linkedinUrl && (
+                      <a
+                        href={article.author.linkedinUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-muted hover:text-gold transition-colors duration-200"
+                      >
+                        LinkedIn
                       </a>
                     )}
                     {article.author.websiteUrl && (

@@ -32,11 +32,6 @@ export function Navigation() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close mobile menu on route change
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
-
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
     return pathname.startsWith(href);
@@ -126,7 +121,7 @@ export function Navigation() {
           </div>
 
           {/* Mobile hamburger — Radix Dialog trigger */}
-          <Dialog.Root open={mobileOpen} onOpenChange={setMobileOpen}>
+          <Dialog.Root key={pathname} open={mobileOpen} onOpenChange={setMobileOpen}>
             <Dialog.Trigger asChild>
               <button
                 type="button"

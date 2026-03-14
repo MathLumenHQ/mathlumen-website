@@ -38,6 +38,7 @@ export const authors = pgTable("authors", {
   avatarUrl: varchar("avatar_url", { length: 512 }),
   email: varchar("email", { length: 256 }),
   twitterHandle: varchar("twitter_handle", { length: 64 }),
+  linkedinUrl: varchar("linkedin_url", { length: 512 }),
   websiteUrl: varchar("website_url", { length: 512 }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });

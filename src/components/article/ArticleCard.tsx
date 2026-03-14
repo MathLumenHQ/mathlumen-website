@@ -1,7 +1,8 @@
 import Link from "next/link";
-import Image from "next/image";
 import { cn, formatDate, truncate } from "@/lib/utils";
 import { Badge } from "@/components/ui/Badge";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import { getPlaceholderUrl } from "@/lib/image-utils";
 import type { ArticleWithAuthor } from "@/schema/types";
 import type { Category } from "@/schema/types";
 
@@ -42,12 +43,13 @@ export function ArticleCard({
         {/* Full-bleed cover image */}
         {article.coverImageUrl && (
           <Link href={articleHref} className="block relative h-80 md:h-96 overflow-hidden">
-            <Image
+            <OptimizedImage
               src={article.coverImageUrl}
               alt={article.title}
               fill
               className="object-cover transition-transform duration-500 group-hover:scale-105"
               sizes="(max-width: 768px) 100vw, 66vw"
+              fallbackSrc={getPlaceholderUrl(article.category)}
               priority
             />
             {/* Gradient overlay */}
@@ -109,12 +111,13 @@ export function ArticleCard({
         {article.coverImageUrl && (
           <Link href={articleHref} className="block overflow-hidden">
             <div className="relative h-48 md:h-full min-h-[160px]">
-              <Image
+              <OptimizedImage
                 src={article.coverImageUrl}
                 alt={article.title}
                 fill
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
                 sizes="260px"
+                fallbackSrc={getPlaceholderUrl(article.category)}
               />
             </div>
           </Link>
@@ -160,12 +163,13 @@ export function ArticleCard({
       {article.coverImageUrl && (
         <Link href={articleHref} className="block overflow-hidden">
           <div className="relative h-48">
-            <Image
+            <OptimizedImage
               src={article.coverImageUrl}
               alt={article.title}
               fill
               className="object-cover transition-transform duration-500 group-hover:scale-105"
-              sizes="(max-width: 768px) 100vw, 33vw"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              fallbackSrc={getPlaceholderUrl(article.category)}
             />
           </div>
         </Link>

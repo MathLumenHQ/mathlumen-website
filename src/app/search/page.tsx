@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { searchArticles, getArticles } from "@/lib/queries/articles";
 import { ArticleCard } from "@/components/article/ArticleCard";
 import { createMetadata } from "@/lib/metadata";
@@ -104,8 +105,11 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         </div>
       ) : query.length >= 2 ? (
         <div className="text-center py-16">
-          <p className="text-muted text-lg mb-2">
-            No results for &quot;{query}&quot;. Try different keywords.
+          <p className="font-display text-xl text-paper mb-2">
+            No results for &quot;{query}&quot;
+          </p>
+          <p className="text-muted text-sm mb-2">
+            Try different keywords or browse by category.
           </p>
 
           {/* Suggestions */}
@@ -122,7 +126,24 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             </div>
           )}
         </div>
-      ) : null}
+      ) : (
+        <div className="py-12">
+          <p className="font-display text-xl text-muted italic mb-6">
+            Search MathLumen
+          </p>
+          <div className="flex flex-wrap gap-3">
+            {(["history", "research", "applied", "ai-ml", "essay"] as const).map((cat) => (
+              <Link
+                key={cat}
+                href={`/category/${cat}`}
+                className="px-4 py-2 text-sm border border-gold/20 text-gold hover:border-gold/40 hover:bg-gold/[0.03] transition-colors duration-200"
+              >
+                {cat === "ai-ml" ? "AI & ML" : cat.charAt(0).toUpperCase() + cat.slice(1)}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

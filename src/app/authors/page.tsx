@@ -1,7 +1,7 @@
-import Image from "next/image";
 import Link from "next/link";
 import { getAllAuthors } from "@/lib/queries/authors";
 import { getArticles } from "@/lib/queries/articles";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { createMetadata } from "@/lib/metadata";
 
 export const metadata = createMetadata({
@@ -36,6 +36,13 @@ export default async function AuthorsPage() {
         </p>
       </div>
 
+      {authors.length === 0 ? (
+        <div className="text-center py-20">
+          <p className="font-display text-xl text-muted italic">
+            Our team is coming together. Stay tuned.
+          </p>
+        </div>
+      ) : (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {authors.map((author) => {
           const count = articleCounts.get(author.id) ?? 0;
@@ -47,12 +54,14 @@ export default async function AuthorsPage() {
             >
               <div className="flex items-center gap-4 mb-4">
                 {author.avatarUrl && (
-                  <Image
+                  <OptimizedImage
                     src={author.avatarUrl}
                     alt={author.name}
                     width={56}
                     height={56}
                     className="rounded-full"
+                    sizes="56px"
+                    fallbackSrc="/images/placeholder-avatar.svg"
                   />
                 )}
                 <div>
@@ -71,6 +80,7 @@ export default async function AuthorsPage() {
           );
         })}
       </div>
+      )}
     </div>
   );
 }

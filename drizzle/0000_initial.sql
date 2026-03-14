@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS authors (
   avatar_url VARCHAR(512),
   email VARCHAR(256),
   twitter_handle VARCHAR(64),
+  linkedin_url VARCHAR(512),
   website_url VARCHAR(512),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

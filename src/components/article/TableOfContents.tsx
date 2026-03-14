@@ -48,6 +48,8 @@ export function TableOfContents({ headings: propHeadings }: TableOfContentsProps
       };
     });
 
+    // DOM scan to sync headings into state — valid external-system sync
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setHeadings(items);
   }, [propHeadings]);
 

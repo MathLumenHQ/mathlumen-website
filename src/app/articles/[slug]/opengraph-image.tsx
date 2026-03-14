@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 import { getArticleBySlug } from "@/lib/queries/articles";
 import { formatDate } from "@/lib/utils";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
 export const alt = "Article preview";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";

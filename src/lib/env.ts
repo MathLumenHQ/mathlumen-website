@@ -7,6 +7,9 @@ const envSchema = z.object({
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1).optional(),
   NEXT_PUBLIC_APP_URL: z.string().url("NEXT_PUBLIC_APP_URL must be a valid URL"),
   NEXT_PUBLIC_SITE_NAME: z.string().min(1, "NEXT_PUBLIC_SITE_NAME is required"),
+  NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT: z.string().url().optional(),
+  IMAGEKIT_PUBLIC_KEY: z.string().startsWith("public_").optional(),
+  IMAGEKIT_PRIVATE_KEY: z.string().startsWith("private_").optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

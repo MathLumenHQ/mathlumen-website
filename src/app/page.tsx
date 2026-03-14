@@ -385,9 +385,15 @@ async function LatestArticles() {
   if (result.data.length === 0) {
     return (
       <div className="text-center py-16">
-        <p className="text-muted text-lg font-display italic">
-          No articles yet. Check back soon.
+        <p className="font-display text-xl text-muted italic mb-2">
+          We&apos;re preparing our first articles.
         </p>
+        <p className="text-muted text-sm mb-8">
+          Subscribe to be notified when we publish.
+        </p>
+        <div className="max-w-md mx-auto">
+          <NewsletterForm />
+        </div>
       </div>
     );
   }
@@ -458,21 +464,20 @@ function FeaturedSkeleton() {
 
 function FeaturedEmptyState() {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6">
-      <div className="bg-ink-2 border border-gold/[0.18] p-12 flex items-center justify-center min-h-[320px]">
-        <div className="text-center">
-          <p className="font-display text-xl text-muted italic mb-2">Coming soon</p>
-          <p className="text-sm text-muted/60">Featured articles will appear here.</p>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      {[1, 2, 3, 4].map((i) => (
+        <div
+          key={i}
+          className="border-2 border-dashed border-gold/30 p-8 flex flex-col items-center justify-center min-h-[220px] text-center"
+        >
+          <span className="font-mono text-gold/40 text-sm mb-3">
+            {String(i).padStart(2, "0")}
+          </span>
+          <p className="font-display text-base text-muted italic">
+            Featured articles coming soon
+          </p>
         </div>
-      </div>
-      <div className="border border-gold/[0.18] divide-y divide-gold/[0.10]">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="flex gap-4 p-5 opacity-40">
-            <span className="font-mono text-gold text-sm">{String(i).padStart(2, "0")}</span>
-            <p className="font-display text-base text-muted italic">Coming soon</p>
-          </div>
-        ))}
-      </div>
+      ))}
     </div>
   );
 }
