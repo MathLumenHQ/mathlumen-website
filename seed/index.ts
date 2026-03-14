@@ -15,48 +15,35 @@ const db = drizzle(client);
 async function seed() {
   console.log("Seeding MathLumen database...\n");
 
+  // ─── Clear existing data ──────────────────────────────────────────
+  console.log("Clearing existing data...");
+  await db.delete(articleTags);
+  await db.delete(articles);
+  await db.delete(tags);
+  await db.delete(authors);
+  await db.delete(subscribers);
+  console.log("  Cleared all tables\n");
+
   // ─── Authors ────────────────────────────────────────────────────────
   console.log("Creating authors...");
-  const [elena, james, anika] = await db
+  const [akhilesh] = await db
     .insert(authors)
     .values([
       {
-        name: "Dr. Elena Vasquez",
-        slug: "elena-vasquez",
-        bio: "Associate Professor of Pure Mathematics at MIT. Elena's research focuses on algebraic geometry and number theory. She has published over forty papers and is a recipient of the Sloan Research Fellowship.",
+        name: "Akhilesh Yadav",
+        slug: "akhilesh-yadav",
+        bio: "Akhilesh Yadav is an applied mathematician and AI practitioner specializing in machine learning, scientific computing, and the mathematical foundations of artificial intelligence. He completed his Master's degree in Applied Mathematics from the Indian Institute of Engineering Science and Technology (IIEST), Shibpur. He currently works as an LLM Trainer at Turing, contributing to the development and evaluation of large language models. He is also the founder of MathLumen, a platform dedicated to exploring advanced mathematics, machine learning, and scientific AI.",
         avatarUrl:
-          "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&h=200&fit=crop&crop=face",
-        email: "elena@mathlumen.com",
-        twitterHandle: "@ElenaVMath",
-        linkedinUrl: "https://linkedin.com/in/elena-vasquez",
-        websiteUrl: "https://math.mit.edu/~evasquez",
-      },
-      {
-        name: "Prof. James Okafor",
-        slug: "james-okafor",
-        bio: "Computational mathematician at Stanford specializing in numerical methods for PDEs and scientific computing. He leads the Applied Math & Computation Lab.",
-        avatarUrl:
-          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face",
-        email: "james@mathlumen.com",
-        twitterHandle: "@JOkaforMath",
-        linkedinUrl: "https://linkedin.com/in/james-okafor",
-        websiteUrl: "https://stanford.edu/~jokafor",
-      },
-      {
-        name: "Dr. Anika Patel",
-        slug: "anika-patel",
-        bio: "Research scientist at DeepMind working at the intersection of mathematics and AI. She holds a PhD in mathematical statistics from Cambridge.",
-        avatarUrl:
-          "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=200&h=200&fit=crop&crop=face",
-        email: "anika@mathlumen.com",
-        twitterHandle: "@AnikaPatelAI",
-        linkedinUrl: "https://linkedin.com/in/anika-patel",
-        websiteUrl: "https://scholar.google.com/citations?user=anikapatel",
+          "https://ik.imagekit.io/netrv2whci/mathlumen/avatars/akhilesh-yadav.png",
+        email: "akhilesh@mathlumen.com",
+        twitterHandle: "@AkhileshYa1408",
+        linkedinUrl: "https://www.linkedin.com/in/akhileshyadav1598/",
+        websiteUrl: "https://mlmathematics.com",
       },
     ])
     .returning();
 
-  console.log(`  Created ${3} authors`);
+  console.log(`  Created 1 author`);
 
   // ─── Tags ───────────────────────────────────────────────────────────
   console.log("Creating tags...");
@@ -89,8 +76,8 @@ async function seed() {
       excerpt: "Euler's identity unites five fundamental constants in a single, breathtaking equation. We explore why mathematicians across centuries have called it the most beautiful result in all of mathematics.",
       category: "essay" as const,
       tags: ["complex-analysis", "euler", "beauty", "constants"],
-      authorId: elena.id,
-      coverImageUrl: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=1200",
+      authorId: akhilesh.id,
+      coverImageUrl: "https://ik.imagekit.io/netrv2whci/mathlumen/article-covers/euler-identity-beauty.png",
       publishedAt: new Date("2026-02-15"),
       isPublished: true,
       readTimeMinutes: 8,
@@ -104,8 +91,8 @@ async function seed() {
       excerpt: "From Pythagorean tuning to the Fast Fourier Transform, mathematics and music have been intertwined for millennia. We explore the deep connections between these two universal languages.",
       category: "essay" as const,
       tags: ["fourier", "harmony", "history"],
-      authorId: elena.id,
-      coverImageUrl: "https://images.unsplash.com/photo-1507838153414-b4b713384a76?w=1200",
+      authorId: akhilesh.id,
+      coverImageUrl: "https://ik.imagekit.io/netrv2whci/mathlumen/article-covers/mathematics-and-music-harmony.png",
       publishedAt: new Date("2026-01-10"),
       isPublished: true,
       readTimeMinutes: 6,
@@ -120,8 +107,8 @@ async function seed() {
       excerpt: "Spectral methods transform PDEs into algebraic systems using global basis functions. We survey how Fourier and Chebyshev expansions achieve exponential convergence where finite differences stall.",
       category: "applied" as const,
       tags: ["spectral-methods", "pde", "fourier", "numerical-analysis"],
-      authorId: james.id,
-      coverImageUrl: "https://images.unsplash.com/photo-1509228468518-180dd4864904?w=1200",
+      authorId: akhilesh.id,
+      coverImageUrl: "https://ik.imagekit.io/netrv2whci/mathlumen/article-covers/spectral-methods-pde.png",
       publishedAt: new Date("2026-01-28"),
       isPublished: true,
       readTimeMinutes: 7,
@@ -135,8 +122,8 @@ async function seed() {
       excerpt: "Monte Carlo simulation is the backbone of derivatives pricing. We explore the mathematics of random sampling, variance reduction, and how stochastic processes model financial markets.",
       category: "applied" as const,
       tags: ["monte-carlo", "probability", "finance", "stochastic"],
-      authorId: james.id,
-      coverImageUrl: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200",
+      authorId: akhilesh.id,
+      coverImageUrl: "https://ik.imagekit.io/netrv2whci/mathlumen/article-covers/monte-carlo-methods-finance.png",
       publishedAt: new Date("2025-12-15"),
       isPublished: true,
       readTimeMinutes: 9,
@@ -151,8 +138,8 @@ async function seed() {
       excerpt: "The Transformer architecture revolutionized AI with a single mechanism: self-attention. We break down the linear algebra behind Attention(Q,K,V), explain why the √d_k scaling factor is essential, and trace how matrix multiplications create meaning.",
       category: "ai-ml" as const,
       tags: ["transformers", "attention", "linear-algebra", "deep-learning"],
-      authorId: anika.id,
-      coverImageUrl: "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=1200",
+      authorId: akhilesh.id,
+      coverImageUrl: "https://ik.imagekit.io/netrv2whci/mathlumen/article-covers/attention-is-all-you-need-math.png",
       publishedAt: new Date("2026-03-01"),
       isPublished: true,
       readTimeMinutes: 9,
@@ -166,8 +153,8 @@ async function seed() {
       excerpt: "Gradient descent navigates high-dimensional loss landscapes shaped by curvature and saddle points. We explore the Riemannian geometry underlying modern optimization in neural networks.",
       category: "ai-ml" as const,
       tags: ["optimization", "geometry", "deep-learning", "riemannian"],
-      authorId: anika.id,
-      coverImageUrl: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200",
+      authorId: akhilesh.id,
+      coverImageUrl: "https://ik.imagekit.io/netrv2whci/mathlumen/article-covers/gradient-descent-geometry.png",
       publishedAt: new Date("2026-02-10"),
       isPublished: true,
       readTimeMinutes: 10,
@@ -182,8 +169,8 @@ async function seed() {
       excerpt: "Srinivasa Ramanujan produced formulas for 1/π of staggering complexity and beauty — with no formal proofs. We trace the story of his correspondence with Hardy and examine the mathematics behind his most famous series.",
       category: "history" as const,
       tags: ["ramanujan", "pi", "infinite-series", "number-theory"],
-      authorId: elena.id,
-      coverImageUrl: "https://images.unsplash.com/photo-1453733190371-0a9bedd82893?w=1200",
+      authorId: akhilesh.id,
+      coverImageUrl: "https://ik.imagekit.io/netrv2whci/mathlumen/article-covers/ramanujan-infinite-series.png",
       publishedAt: new Date("2026-02-01"),
       isPublished: true,
       readTimeMinutes: 7,
@@ -197,8 +184,8 @@ async function seed() {
       excerpt: "Emmy Noether's theorem connects symmetries to conservation laws, uniting mathematics and physics in a profound way. We trace her extraordinary contributions and the obstacles she overcame.",
       category: "history" as const,
       tags: ["noether", "symmetry", "algebra", "physics"],
-      authorId: elena.id,
-      coverImageUrl: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=1200",
+      authorId: akhilesh.id,
+      coverImageUrl: "https://ik.imagekit.io/netrv2whci/mathlumen/article-covers/women-in-mathematics-noether.png",
       publishedAt: new Date("2025-11-20"),
       isPublished: true,
       readTimeMinutes: 8,
@@ -213,8 +200,8 @@ async function seed() {
       excerpt: "The Riemann Hypothesis, proposed in 1859, remains unproven. We survey recent progress, computational verification to trillions of zeros, and why this conjecture matters for the distribution of prime numbers.",
       category: "research" as const,
       tags: ["riemann", "prime-numbers", "number-theory", "millennium-problems"],
-      authorId: elena.id,
-      coverImageUrl: "https://images.unsplash.com/photo-1596495578065-6e0763fa1178?w=1200",
+      authorId: akhilesh.id,
+      coverImageUrl: "https://ik.imagekit.io/netrv2whci/mathlumen/article-covers/riemann-hypothesis-status.png",
       publishedAt: new Date("2026-03-05"),
       isPublished: true,
       readTimeMinutes: 11,
@@ -228,8 +215,8 @@ async function seed() {
       excerpt: "Topological data analysis uses algebraic topology to extract structural features from complex datasets. We explain persistent homology, Betti numbers, and how topology reveals hidden patterns in high-dimensional data.",
       category: "research" as const,
       tags: ["topology", "data-analysis", "homology", "applied-math"],
-      authorId: anika.id,
-      coverImageUrl: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=1200",
+      authorId: akhilesh.id,
+      coverImageUrl: "https://ik.imagekit.io/netrv2whci/mathlumen/article-covers/topological-data-analysis.png",
       publishedAt: new Date("2026-01-15"),
       isPublished: true,
       readTimeMinutes: 8,
@@ -244,8 +231,8 @@ async function seed() {
       excerpt: "Elliptic curve cryptography provides the strongest security per bit of any known public-key system. We explore the algebraic geometry that makes modern encryption possible.",
       category: "applied" as const,
       tags: ["cryptography", "elliptic-curves", "algebra", "security"],
-      authorId: james.id,
-      coverImageUrl: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1200",
+      authorId: akhilesh.id,
+      coverImageUrl: "https://ik.imagekit.io/netrv2whci/mathlumen/article-covers/cryptography-elliptic-curves.png",
       publishedAt: new Date("2025-12-01"),
       isPublished: true,
       readTimeMinutes: 9,
@@ -259,8 +246,8 @@ async function seed() {
       excerpt: "Information geometry equips the space of probability distributions with a Riemannian metric — the Fisher information. We explore how this framework illuminates learning dynamics in neural networks.",
       category: "ai-ml" as const,
       tags: ["information-geometry", "fisher-metric", "neural-networks", "riemannian"],
-      authorId: anika.id,
-      coverImageUrl: "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=1200",
+      authorId: akhilesh.id,
+      coverImageUrl: "https://ik.imagekit.io/netrv2whci/mathlumen/article-covers/information-geometry-neural-networks.png",
       publishedAt: new Date("2025-11-05"),
       isPublished: true,
       readTimeMinutes: 10,
@@ -346,7 +333,7 @@ async function seed() {
 
   // ─── Summary ────────────────────────────────────────────────────────
   console.log("\nSeed complete!");
-  console.log(`  Authors:      3`);
+  console.log(`  Authors:      1`);
   console.log(`  Tags:         ${insertedTags.length}`);
   console.log(`  Articles:     ${insertedArticles.length}`);
   console.log(`  Tag links:    ${articleTagLinks.length}`);

@@ -16,6 +16,7 @@ export function OptimizedImage({
   fallbackSrc = "/images/placeholder-article.svg",
   alt,
   src,
+  fill,
   ...props
 }: OptimizedImageProps) {
   const [imgSrc, setImgSrc] = useState(src);
@@ -26,8 +27,15 @@ export function OptimizedImage({
     typeof src === "string" &&
     (src.includes("ik.imagekit.io") || !src.startsWith("http"));
 
+  // When `fill` is used, the wrapper must stretch to fill the positioned parent
+  // (outer container is `relative h-X`). An extra `relative` wrapper collapses
+  // to 0 height because fill children are `position: absolute`.
+  const wrapperClass = fill
+    ? "absolute inset-0 overflow-hidden"
+    : "relative overflow-hidden";
+
   return (
-    <div className="relative overflow-hidden">
+    <div className={wrapperClass}>
       {isLoading && (
         <div className="absolute inset-0 animate-pulse bg-ink-2" />
       )}
@@ -35,6 +43,7 @@ export function OptimizedImage({
         {...props}
         src={imgSrc}
         alt={alt}
+        fill={fill}
         loader={useImageKit && isImageKitUrl ? imagekitLoader : undefined}
         onLoad={() => setIsLoading(false)}
         onError={() => {

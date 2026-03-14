@@ -1,29 +1,12 @@
 [
   {
-    "name": "Dr. Elena Vasquez",
-    "slug": "elena-vasquez",
-    "bio": "Associate Professor of Pure Mathematics at MIT. Elena's research focuses on algebraic geometry and number theory. She has published over forty papers and is a recipient of the Sloan Research Fellowship. Her writing bridges the gap between rigorous mathematics and accessible exposition.",
-    "avatarUrl": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&h=200&fit=crop&crop=face",
-    "email": "elena@mathlumen.com",
-    "twitterHandle": "@ElenaVMath",
-    "websiteUrl": "https://math.mit.edu/~evasquez"
-  },
-  {
-    "name": "Prof. James Okafor",
-    "slug": "james-okafor",
-    "bio": "James is a computational mathematician at Stanford specializing in numerical methods for PDEs and scientific computing. He leads the Applied Math & Computation Lab and has contributed to open-source spectral method libraries used worldwide.",
-    "avatarUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face",
-    "email": "james@mathlumen.com",
-    "twitterHandle": "@JOkaforMath",
-    "websiteUrl": "https://stanford.edu/~jokafor"
-  },
-  {
-    "name": "Dr. Anika Patel",
-    "slug": "anika-patel",
-    "bio": "Anika is a research scientist at DeepMind working at the intersection of mathematics and artificial intelligence. She holds a PhD in mathematical statistics from Cambridge and writes about the theoretical foundations of machine learning.",
-    "avatarUrl": "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=200&h=200&fit=crop&crop=face",
-    "email": "anika@mathlumen.com",
-    "twitterHandle": "@AnikaPatelAI",
-    "websiteUrl": "https://scholar.google.com/citations?user=anikapatel"
+    "name": "Akhilesh Yadav",
+    "slug": "akhilesh-yadav",
+    "bio": "Akhilesh Yadav is an applied mathematician and AI practitioner specializing in machine learning, scientific computing, and the mathematical foundations of artificial intelligence. He completed his Master's degree in Applied Mathematics from the Indian Institute of Engineering Science and Technology (IIEST), Shibpur. He currently works as an LLM Trainer at Turing, contributing to the development and evaluation of large language models. He is also the founder of MathLumen, a platform dedicated to exploring advanced mathematics, machine learning, and scientific AI.",
+    "avatarUrl": "https://ik.imagekit.io/netrv2whci/mathlumen/avatars/akhilesh-yadav.png",
+    "email": "akhilesh@mathlumen.com",
+    "twitterHandle": "@AkhileshYa1408",
+    "linkedinUrl": "https://www.linkedin.com/in/akhileshyadav1598/",
+    "websiteUrl": "https://mlmathematics.com"
   }
 ]

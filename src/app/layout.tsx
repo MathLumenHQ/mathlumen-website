@@ -37,6 +37,7 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
     path: "/",
   }),
+  metadataBase: new URL("https://mathlumen.com"),
   title: {
     default: SITE_NAME,
     template: `%s | ${SITE_NAME}`,
@@ -54,6 +55,7 @@ export default function RootLayout({
       className={`${playfair.variable} ${crimson.variable} ${dmMono.variable}`}
     >
       <head>
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link
           rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/katex@0.16.38/dist/katex.min.css"

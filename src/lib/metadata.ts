@@ -26,7 +26,7 @@ export function createMetadata({
   type = "website",
 }: CreateMetadataOptions): Metadata {
   const url = `${SITE_URL}${path}`;
-  const ogImage = image ?? `${SITE_URL}/og-default.png`;
+  const ogImage = image ?? `${SITE_URL}/opengraph-image`;
 
   return {
     title: `${title} | ${SITE_NAME}`,
