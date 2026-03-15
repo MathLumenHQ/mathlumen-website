@@ -17,6 +17,10 @@ import type { Category } from "@/schema/types";
    CONTENT PILLARS DATA
    ═══════════════════════════════════════════════════════════════════════ */
 
+// LaTeX formula — defined as constant to prevent linter from stripping the backslash
+// eslint-disable-next-line no-useless-escape
+const HERO_FORMULA = "e^{i\\pi} + 1 = 0";
+
 const PILLARS = [
   {
     num: "01",
@@ -131,7 +135,7 @@ export default function HomePage() {
 
               {/* Formula */}
               <div className="fade-up fade-up-delay-2 mb-6">
-                <MathFormula formula="e^{i\pi} + 1 = 0" display />
+                <MathFormula formula={HERO_FORMULA} display />
               </div>
 
               {/* Description */}
@@ -296,7 +300,46 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Section 6: RECENT FROM EACH CATEGORY ────────────────────── */}
+      {/* ── Section 6: MLTEX EDITOR PROMO ──────────────────────────── */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="relative border border-gold/[0.18] overflow-hidden">
+          {/* Subtle background */}
+          <div className="absolute inset-0 bg-gradient-to-r from-gold/[0.03] via-transparent to-gold/[0.03]" />
+
+          <div className="relative flex flex-col lg:flex-row items-center gap-8 p-8 lg:p-12">
+            {/* Left: content */}
+            <div className="flex-1 text-center lg:text-left">
+              <p className="font-mono text-gold uppercase tracking-[0.2em] text-xs mb-3">
+                Free Tool
+              </p>
+              <h2 className="font-display text-2xl md:text-3xl font-bold text-paper mb-3">
+                MLTeX
+              </h2>
+              <p className="font-body text-muted text-base leading-relaxed max-w-lg mx-auto lg:mx-0">
+                Write and preview math equations in real-time. Split-pane editor
+                with MathJax rendering, templates, dark &amp; light modes, and
+                fullscreen support — no sign-up required.
+              </p>
+            </div>
+
+            {/* Right: preview snippet + CTA */}
+            <div className="shrink-0 flex flex-col items-center gap-5">
+              {/* Mini formula preview */}
+              <div className="px-6 py-4 bg-ink-2 border border-gold/10 text-center">
+                <p className="font-mono text-gold/70 text-xs mb-2">Live Preview</p>
+                <MathFormula formula={HERO_FORMULA} display />
+              </div>
+              <Link href="/tools/mltex">
+                <Button variant="gold" size="lg">
+                  Open Editor &rarr;
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Section 7: RECENT FROM EACH CATEGORY ────────────────────── */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         {CATEGORY_ROWS.map((row) => (
           <Suspense key={row.category} fallback={<CategoryRowSkeleton label={row.label} />}>

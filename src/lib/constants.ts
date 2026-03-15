@@ -29,6 +29,7 @@ export const NAV_CATEGORY_LINKS = [
   { href: "/category/applied", label: "Applied Math" },
   { href: "/category/ai-ml", label: "AI & ML" },
   { href: "/category/essay", label: "Essays" },
+  { href: "/tools/mltex", label: "MLTeX" },
 ] as const;
 
 /** Full navigation links for mobile drawer */
@@ -40,6 +41,7 @@ export const NAV_LINKS = [
   { href: "/category/applied", label: "Applied Math" },
   { href: "/category/ai-ml", label: "AI & ML" },
   { href: "/category/essay", label: "Essays" },
+  { href: "/tools/mltex", label: "MLTeX" },
   { href: "/authors", label: "Authors" },
   { href: "/about", label: "About" },
   { href: "/archive", label: "Archive" },
@@ -57,5 +59,8 @@ export const FOOTER_LINKS = {
     { href: "/category/applied", label: "Applied Math" },
     { href: "/category/ai-ml", label: "AI & ML" },
     { href: "/category/essay", label: "Essays" },
+  ],
+  tools: [
+    { href: "/tools/mltex", label: "MLTeX" },
   ],
 } as const;

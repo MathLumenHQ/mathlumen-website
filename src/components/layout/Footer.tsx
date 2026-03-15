@@ -102,13 +102,29 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Col 2: Publication */}
+          {/* Col 2: Publication + Tools */}
           <div>
             <h3 className="font-display text-sm font-semibold text-gold-light uppercase tracking-wider mb-4">
               Publication
             </h3>
             <ul className="space-y-2.5">
               {FOOTER_LINKS.publication.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-muted hover:text-paper transition-colors duration-200"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+
+            <h3 className="font-display text-sm font-semibold text-gold-light uppercase tracking-wider mb-4 mt-6">
+              Tools
+            </h3>
+            <ul className="space-y-2.5">
+              {FOOTER_LINKS.tools.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
