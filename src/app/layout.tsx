@@ -6,6 +6,7 @@ import { SearchDialog } from "@/components/forms/SearchDialog";
 import { createMetadata } from "@/lib/metadata";
 import { SITE_NAME, SITE_DESCRIPTION } from "@/lib/constants";
 import "@/styles/globals.css";
+import "katex/dist/katex.min.css";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -53,14 +54,10 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${playfair.variable} ${crimson.variable} ${dmMono.variable}`}
+      suppressHydrationWarning
     >
       <head>
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-        <link
-          rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/katex@0.16.38/dist/katex.min.css"
-          crossOrigin="anonymous"
-        />
       </head>
       <body className="min-h-screen flex flex-col bg-ink text-paper font-body antialiased">
         {/* Skip to main content — sr-only, visible on focus */}

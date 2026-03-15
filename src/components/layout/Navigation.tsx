@@ -125,7 +125,7 @@ export function Navigation() {
             <Dialog.Trigger asChild>
               <button
                 type="button"
-                className="lg:hidden text-paper/60 hover:text-paper p-2 transition-colors duration-200"
+                className="lg:hidden text-paper/60 hover:text-paper p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center transition-colors duration-200"
                 aria-label="Open navigation menu"
               >
                 <svg

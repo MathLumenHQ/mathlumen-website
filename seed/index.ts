@@ -32,7 +32,7 @@ async function seed() {
       {
         name: "Akhilesh Yadav",
         slug: "akhilesh-yadav",
-        bio: "Akhilesh Yadav is an applied mathematician and AI practitioner specializing in machine learning, scientific computing, and the mathematical foundations of artificial intelligence. He completed his Master's degree in Applied Mathematics from the Indian Institute of Engineering Science and Technology (IIEST), Shibpur. He currently works as an LLM Trainer at Turing, contributing to the development and evaluation of large language models. He is also the founder of MathLumen, a platform dedicated to exploring advanced mathematics, machine learning, and scientific AI.",
+        bio: "Applied mathematician and AI practitioner. Founder of MathLumen, exploring mathematics behind machine learning and scientific AI.",
         avatarUrl:
           "https://ik.imagekit.io/netrv2whci/mathlumen/avatars/akhilesh-yadav.png",
         email: "akhilesh@mathlumen.com",

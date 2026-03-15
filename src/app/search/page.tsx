@@ -59,8 +59,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
           {/* Category filter */}
           {query && (
-            <div className="flex items-center gap-2 mt-3">
-              <span className="text-xs text-muted font-mono">Filter:</span>
+            <div className="flex flex-wrap items-center gap-2 mt-3">
+              <span className="text-xs text-muted font-mono shrink-0">Filter:</span>
               {["history", "research", "applied", "ai-ml", "essay"].map((cat) => (
                 <a
                   key={cat}

@@ -32,6 +32,11 @@ html {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   scroll-behavior: smooth;
+  /* Prevent horizontal overflow on all screens */
+  overflow-x: hidden;
+  /* Prevent iOS Safari from auto-scaling text */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
@@ -39,6 +44,8 @@ body {
   background-color: var(--color-ink);
   color: var(--color-paper);
   line-height: 1.7;
+  /* Belt-and-suspenders overflow guard */
+  overflow-x: hidden;
 }
 
 ::selection {
@@ -176,6 +183,10 @@ body {
   padding: 1.25rem 1.5rem;
   margin: 2rem 0;
   overflow-x: auto;
+  /* Smooth momentum scrolling on iOS */
+  -webkit-overflow-scrolling: touch;
+  /* Ensure it never forces the page wider */
+  max-width: 100%;
 }
 
 .prose pre code {
@@ -186,6 +197,10 @@ body {
 }
 
 .prose table {
+  /* Scroll horizontally on narrow screens instead of overflowing */
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   width: 100%;
   border-collapse: collapse;
   margin: 2rem 0;
@@ -247,6 +262,9 @@ body {
 .prose img {
   border-radius: var(--radius-md);
   margin: 2rem 0;
+  /* Never exceed container width on any screen size */
+  max-width: 100%;
+  height: auto;
 }
 
 .prose strong {

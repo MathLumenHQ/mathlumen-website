@@ -1,5 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
+
+export const revalidate = 3600;
 import { getArticles } from "@/lib/queries/articles";
 import { ArticleCard } from "@/components/article/ArticleCard";
 import { CategoryFilter } from "@/components/article/CategoryFilter";
@@ -129,7 +131,7 @@ export default function HomePage() {
 
               {/* Formula */}
               <div className="fade-up fade-up-delay-2 mb-6">
-                <MathFormula formula="e^{i\\pi} + 1 = 0" display />
+                <MathFormula formula="e^{i\pi} + 1 = 0" display />
               </div>
 
               {/* Description */}
