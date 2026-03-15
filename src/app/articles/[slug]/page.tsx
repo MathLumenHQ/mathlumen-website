@@ -169,8 +169,11 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             </div>
           </div>
 
-          {/* Gold separator */}
-          <div className="mt-8 h-px bg-gold/[0.18]" />
+          {/* Share + separator */}
+          <div className="mt-6 flex items-center justify-between gap-4">
+            <ShareButtons title={article.title} url={articleUrl} variant="compact" />
+          </div>
+          <div className="mt-4 h-px bg-gold/[0.18]" />
         </header>
 
         {/* Three-column layout */}
