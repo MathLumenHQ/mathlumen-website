@@ -12,8 +12,25 @@ if (!DATABASE_URL) {
 const client = postgres(DATABASE_URL, { max: 1 });
 const db = drizzle(client);
 
+
 async function seed() {
+  // Safety guard — prevents accidental runs
+  if (process.env.NODE_ENV === "production") {
+    console.error("ERROR: Seed script cannot run in production.");
+    process.exit(1);
+  }
+
+  const confirmed = process.env.CONFIRM_SEED;
+  if (confirmed !== "yes") {
+    console.error(
+      "ERROR: To run the seed, set CONFIRM_SEED=yes\n" +
+      "Example: CONFIRM_SEED=yes pnpm run seed"
+    );
+    process.exit(1);
+  }
+
   console.log("Seeding MathLumen database...\n");
+
 
   // ─── Clear existing data ──────────────────────────────────────────
   console.log("Clearing existing data...");
@@ -194,14 +211,14 @@ async function seed() {
     },
     // Research (2)
     {
-      slug: "riemann-hypothesis-status",
+      slug: "riemann-hypothesis-2026-status-report",
       title: "The Riemann Hypothesis: A 2026 Status Report",
       subtitle: "The greatest unsolved problem in mathematics",
       excerpt: "The Riemann Hypothesis, proposed in 1859, remains unproven. We survey recent progress, computational verification to trillions of zeros, and why this conjecture matters for the distribution of prime numbers.",
       category: "research" as const,
       tags: ["riemann", "prime-numbers", "number-theory", "millennium-problems"],
       authorId: akhilesh.id,
-      coverImageUrl: "https://ik.imagekit.io/netrv2whci/mathlumen/article-covers/riemann-hypothesis-status.png",
+      coverImageUrl: "https://ik.imagekit.io/netrv2whci/mathlumen/article-covers/riemann-hypothesis-2026-status-report?updatedAt=1773645862642",
       publishedAt: new Date("2026-03-05"),
       isPublished: true,
       readTimeMinutes: 11,
