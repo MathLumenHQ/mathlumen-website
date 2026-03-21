@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
-import { getArticleBySlug, getRelatedArticles } from "@/lib/queries/articles";
+import { getArticleBySlug } from "@/lib/queries/articles";
 import { getArticleContent, listArticleSlugs } from "@/lib/mdx";
 import { createMetadata } from "@/lib/metadata";
 import { formatDate } from "@/lib/utils";
@@ -13,10 +13,13 @@ import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { getPlaceholderUrl } from "@/lib/image-utils";
 import { ProgressBar } from "@/components/article/ProgressBar";
 import { TableOfContents } from "@/components/article/TableOfContents";
-import { ArticleCard } from "@/components/article/ArticleCard";
 import { ShareButtons } from "@/components/article/ShareButtons";
 import { CiteDialog } from "@/components/article/CiteDialog";
-import { NewsletterForm } from "@/components/forms/NewsletterForm";
+import { PopularArticles } from "@/components/article/PopularArticles";
+import { RecommendedArticles } from "@/components/article/RecommendedArticles";
+import { SidebarNewsletter } from "@/components/sidebar/SidebarNewsletter";
+import { ToolsPromo } from "@/components/sidebar/ToolsPromo";
+import { AdSlot } from "@/components/sidebar/AdSlot";
 import { ViewTracker } from "./ViewTracker";
 import type { Category } from "@/schema/types";
 import type { Metadata } from "next";
@@ -61,11 +64,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     notFound();
   }
 
-  const [mdxResult, related] = await Promise.all([
-    getArticleContent(slug),
-    getRelatedArticles(article.id, article.category, 3),
-  ]);
-
+  const mdxResult = await getArticleContent(slug);
   const articleUrl = `${SITE_URL}/articles/${slug}`;
 
   const jsonLd = {
@@ -169,7 +168,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             </div>
           </div>
 
-          {/* Share + separator */}
+          {/* Share row + separator */}
           <div className="mt-6 flex items-center justify-between gap-4">
             <ShareButtons title={article.title} url={articleUrl} variant="compact" />
           </div>
@@ -178,7 +177,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
         {/* Three-column layout */}
         <div className="lg:grid lg:grid-cols-[220px_1fr_280px] lg:gap-12">
-          {/* Left sidebar — ToC (desktop) */}
+          {/* Left sidebar — ToC (desktop only) */}
           <aside className="hidden lg:block">
             <div className="sticky top-20">
               {mdxResult && (
@@ -316,83 +315,41 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             </div>
           </article>
 
-          {/* Right sidebar — related + newsletter */}
+          {/* Right sidebar (desktop only) */}
           <aside className="hidden lg:block">
             <div className="sticky top-20 space-y-8">
-              {/* Related articles */}
-              {related.length > 0 && (
-                <div>
-                  <h3 className="font-display text-sm font-semibold text-gold-light uppercase tracking-wider mb-4">
-                    Related Articles
-                  </h3>
-                  <div className="space-y-4">
-                    {related.map((rel) => (
-                      <Link
-                        key={rel.id}
-                        href={`/articles/${rel.slug}`}
-                        className="block group"
-                      >
-                        {rel.coverImageUrl && (
-                          <div className="relative h-32 mb-2 overflow-hidden">
-                            <Image
-                              src={rel.coverImageUrl}
-                              alt={rel.title}
-                              fill
-                              className="object-cover group-hover:scale-105 transition-transform duration-300"
-                              sizes="280px"
-                            />
-                          </div>
-                        )}
-                        <Badge
-                          category={rel.category as Category}
-                          size="sm"
-                        >
-                          {rel.category}
-                        </Badge>
-                        <h4 className="text-sm font-display font-semibold text-paper mt-1 group-hover:text-gold transition-colors duration-200 line-clamp-2">
-                          {rel.title}
-                        </h4>
-                        {rel.publishedAt && (
-                          <p className="text-xs text-muted font-mono mt-1">
-                            {formatDate(rel.publishedAt)}
-                          </p>
-                        )}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Newsletter mini-form */}
-              <div className="border border-gold/[0.18] p-4">
-                <h3 className="font-display text-sm font-semibold text-gold-light uppercase tracking-wider mb-3">
-                  Newsletter
-                </h3>
-                <p className="text-xs text-muted mb-3">
-                  Get new articles delivered to your inbox.
-                </p>
-                <Suspense fallback={<Skeleton className="h-20 w-full" />}>
-                  <NewsletterForm />
-                </Suspense>
-              </div>
+              <SidebarNewsletter />
+              <Suspense fallback={<PopularSkeleton />}>
+                <PopularArticles />
+              </Suspense>
+              <ToolsPromo />
+              <AdSlot />
             </div>
           </aside>
         </div>
       </div>
 
-      {/* Related articles — mobile (below article) */}
-      {related.length > 0 && (
-        <section className="lg:hidden max-w-6xl mx-auto px-4 sm:px-6 py-12 border-t border-gold/[0.18]">
-          <h2 className="font-display text-2xl font-bold text-paper mb-8">
-            Related Articles
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {related.map((rel) => (
-              <ArticleCard key={rel.id} article={rel} />
-            ))}
-          </div>
-        </section>
-      )}
+      {/* Related articles — mobile (below article, hidden on desktop) */}
+      <Suspense fallback={null}>
+        <RecommendedArticles articleId={article.id} category={article.category} />
+      </Suspense>
     </>
+  );
+}
+
+function PopularSkeleton() {
+  return (
+    <div className="space-y-3">
+      <div className="h-4 w-32 bg-gold/10 animate-pulse" />
+      {[1, 2, 3, 4, 5].map((i) => (
+        <div key={i} className="flex gap-3">
+          <div className="w-5 h-3 bg-gold/10 animate-pulse shrink-0 mt-1" />
+          <div className="flex-1 space-y-1">
+            <div className="h-3 w-full bg-paper/5 animate-pulse" />
+            <div className="h-3 w-3/4 bg-paper/5 animate-pulse" />
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }

@@ -15,6 +15,19 @@ import { MdxImage } from "@/components/article/MdxImage";
 
 const CONTENT_DIR = path.join(process.cwd(), "content", "articles");
 
+/**
+ * Recursively find an MDX file by slug anywhere under CONTENT_DIR.
+ * The slug is always the filename (without .mdx), not the folder path.
+ */
+function findArticleFile(slug: string): string | null {
+  if (!fs.existsSync(CONTENT_DIR)) return null;
+  const all = fs.readdirSync(CONTENT_DIR, { recursive: true }) as string[];
+  const match = all.find((f) => f.endsWith(`${slug}.mdx`));
+  if (!match) return null;
+  // readdirSync returns relative paths on Node 18.17+ — join with root
+  return path.join(CONTENT_DIR, match);
+}
+
 interface ArticleFrontmatter {
   title: string;
   subtitle?: string;
@@ -106,9 +119,9 @@ export function extractHeadings(source: string): TocHeading[] {
  */
 export async function getArticleContent(slug: string): Promise<CompiledArticle | null> {
   try {
-    const filePath = path.join(CONTENT_DIR, `${slug}.mdx`);
+    const filePath = findArticleFile(slug);
 
-    if (!fs.existsSync(filePath)) {
+    if (!filePath) {
       return null;
     }
 
@@ -139,10 +152,10 @@ export function listArticleSlugs(): string[] {
       return [];
     }
 
-    return fs
-      .readdirSync(CONTENT_DIR)
-      .filter((file) => file.endsWith(".mdx"))
-      .map((file) => file.replace(/\.mdx$/, ""));
+    const all = fs.readdirSync(CONTENT_DIR, { recursive: true }) as string[];
+    return all
+      .filter((f) => f.endsWith(".mdx"))
+      .map((f) => path.basename(f, ".mdx"));
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     console.error(`Failed to list article slugs: ${message}`);

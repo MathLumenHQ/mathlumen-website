@@ -15,6 +15,7 @@
     "db:studio": "drizzle-kit studio",
     "seed": "tsx --env-file=.env seed/index.ts",
     "upload-image": "tsx scripts/upload-image.ts",
+    "new-article": "tsx scripts/new-article.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },
