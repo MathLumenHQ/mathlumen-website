@@ -2,7 +2,7 @@
 
 export const SITE_NAME = "MathLumen";
 export const SITE_DESCRIPTION =
-  "A scholarly mathematics publication exploring the beauty, history, and applications of mathematics.";
+  "MathLumen publishes rigorous, beautifully written articles on pure and applied mathematics, the history of math, and the deep mathematics powering modern AI.";
 export const SITE_URL = "https://mathlumen.com";
 export const TWITTER_HANDLE = "@MathLumen";
 export const GITHUB_URL = "https://github.com/MathLumen";
@@ -50,6 +50,7 @@ export const NAV_LINKS = [
 export const FOOTER_LINKS = {
   publication: [
     { href: "/about", label: "About" },
+    { href: "/topics", label: "All Topics" },
     { href: "/authors", label: "Write for Us" },
     { href: "/archive", label: "Archive" },
   ],

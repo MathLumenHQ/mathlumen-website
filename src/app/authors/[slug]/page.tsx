@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getAuthorBySlug, getAuthorArticles } from "@/lib/queries/authors";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { ArticleCard } from "@/components/article/ArticleCard";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { createMetadata } from "@/lib/metadata";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { SITE_URL } from "@/lib/constants";
@@ -59,6 +60,13 @@ export default async function AuthorPage({ params }: AuthorPageProps) {
     <>
     <JsonLd data={jsonLd} />
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <Breadcrumbs
+        items={[
+          { name: "Home", href: "/" },
+          { name: "Authors", href: "/authors" },
+          { name: author.name },
+        ]}
+      />
       {/* Hero */}
       <div className="flex flex-col md:flex-row items-start gap-8 mb-12 pb-8 border-b border-gold/[0.18]">
         {author.avatarUrl && (

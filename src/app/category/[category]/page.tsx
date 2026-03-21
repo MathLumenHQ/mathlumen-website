@@ -2,19 +2,22 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getArticles } from "@/lib/queries/articles";
 import { ArticleCard } from "@/components/article/ArticleCard";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { createMetadata } from "@/lib/metadata";
 import type { Category } from "@/schema/types";
 import type { Metadata } from "next";
 
 const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   history:
-    "Exploring the rich tapestry of mathematical discovery through the ages",
+    "Trace mathematics' 4,000-year story: from Babylonian algebra and Greek geometry to Euler's identities, Ramanujan's notebooks, and 21st-century computer-verified proofs.",
   research:
-    "Rigorous coverage of new theorems, proofs, and mathematical breakthroughs",
-  applied: "Where abstract mathematics meets the physical world",
-  "ai-ml": "The deep mathematical foundations of artificial intelligence",
+    "In-depth coverage of new theorems, open problems, and proof techniques across algebra, analysis, topology, number theory, and the frontiers of pure mathematics.",
+  applied:
+    "Differential equations, optimization, numerical methods, and signal processing — the mathematics that powers engineering, physics, finance, and the modern world.",
+  "ai-ml":
+    "Explore the linear algebra, calculus, probability, and information theory that power transformers, neural networks, gradient descent, and the ongoing AI revolution.",
   essay:
-    "Long-form explorations of ideas that deserve more than a theorem statement",
+    "Long-form essays on mathematical beauty, philosophy, and culture — exploring why mathematics matters and how it shapes our understanding of the universe.",
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -81,6 +84,13 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <Breadcrumbs
+        items={[
+          { name: "Home", href: "/" },
+          { name: label },
+        ]}
+      />
+
       {/* Hero */}
       <div className="mb-12 pb-8 border-b border-gold/[0.18]">
         <p className="text-xs text-gold font-mono uppercase tracking-widest mb-3">

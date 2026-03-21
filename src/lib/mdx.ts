@@ -144,6 +144,23 @@ export async function getArticleContent(slug: string): Promise<CompiledArticle |
 }
 
 /**
+ * Read the raw MDX body (after frontmatter) for a given slug.
+ * Returns null if the file is not found.
+ * Used by faq-schema extraction without re-compiling MDX.
+ */
+export function getArticleRawBody(slug: string): string | null {
+  try {
+    const filePath = findArticleFile(slug);
+    if (!filePath) return null;
+    const raw = fs.readFileSync(filePath, "utf-8");
+    const frontmatterEnd = raw.indexOf("---", 3);
+    return frontmatterEnd !== -1 ? raw.slice(frontmatterEnd + 3).trim() : raw;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * List all available MDX article slugs from the content directory.
  */
 export function listArticleSlugs(): string[] {

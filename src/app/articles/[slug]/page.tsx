@@ -3,10 +3,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 import { getArticleBySlug } from "@/lib/queries/articles";
-import { getArticleContent, listArticleSlugs } from "@/lib/mdx";
+import { getArticleContent, listArticleSlugs, getArticleRawBody } from "@/lib/mdx";
 import { createMetadata } from "@/lib/metadata";
 import { formatDate } from "@/lib/utils";
 import { SITE_URL } from "@/lib/constants";
+import { getInternalLinks } from "@/lib/internal-links";
+import { extractFaqPairs, buildFaqSchema } from "@/lib/faq-schema";
 import { Badge } from "@/components/ui/Badge";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
@@ -20,9 +22,18 @@ import { RecommendedArticles } from "@/components/article/RecommendedArticles";
 import { SidebarNewsletter } from "@/components/sidebar/SidebarNewsletter";
 import { ToolsPromo } from "@/components/sidebar/ToolsPromo";
 import { AdSlot } from "@/components/sidebar/AdSlot";
+import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { ViewTracker } from "./ViewTracker";
 import type { Category } from "@/schema/types";
 import type { Metadata } from "next";
+
+const CATEGORY_LABELS: Record<string, string> = {
+  history: "History",
+  research: "Research",
+  applied: "Applied Math",
+  "ai-ml": "AI & ML",
+  essay: "Essays",
+};
 
 export const revalidate = 3600;
 
@@ -64,7 +75,13 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     notFound();
   }
 
-  const mdxResult = await getArticleContent(slug);
+  const [mdxResult, internalLinks] = await Promise.all([
+    getArticleContent(slug),
+    getInternalLinks(article.slug, article.category, article.tags ?? []),
+  ]);
+
+  const rawBody = getArticleRawBody(slug);
+  const faqPairs = rawBody ? extractFaqPairs(rawBody) : [];
   const articleUrl = `${SITE_URL}/articles/${slug}`;
 
   const jsonLd = {
@@ -99,10 +116,27 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      {faqPairs.length > 0 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(buildFaqSchema(faqPairs)) }}
+        />
+      )}
       <ProgressBar />
       <ViewTracker articleId={article.id} />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <Breadcrumbs
+          items={[
+            { name: "Home", href: "/" },
+            {
+              name: CATEGORY_LABELS[article.category] ?? article.category,
+              href: `/category/${article.category}`,
+            },
+            { name: article.title },
+          ]}
+        />
+
         {/* Article Header — full width */}
         <header className="max-w-3xl mx-auto mb-10 lg:max-w-none">
           <div className="flex items-center gap-3 mb-4">
@@ -242,6 +276,32 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                     <Badge key={tag}>{tag}</Badge>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* Also on MathLumen — internal links */}
+            {internalLinks.length > 0 && (
+              <div className="mt-12 pt-8 border-t border-gold/[0.18]">
+                <p className="font-mono text-xs text-gold uppercase tracking-[0.2em] mb-4">
+                  Also on MathLumen
+                </p>
+                <ul className="space-y-2.5">
+                  {internalLinks.map((link) => (
+                    <li key={link.slug}>
+                      <Link
+                        href={`/articles/${link.slug}`}
+                        className="flex items-start gap-2 group text-sm"
+                      >
+                        <span className="text-gold/40 mt-0.5 shrink-0" aria-hidden="true">
+                          &rarr;
+                        </span>
+                        <span className="text-muted group-hover:text-paper transition-colors duration-200 leading-snug">
+                          {link.title}
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               </div>
             )}
 

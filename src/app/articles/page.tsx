@@ -19,7 +19,7 @@ const ARTICLES_PER_PAGE = 6;
 export const metadata = createMetadata({
   title: "All Articles",
   description:
-    "Explore all articles on mathematics — from pure theory and history to AI and applied methods.",
+    "Browse every MathLumen article: pure mathematics, history of math, applied methods, AI and machine learning theory, and long-form essays on mathematical beauty.",
   path: "/articles",
 });
 

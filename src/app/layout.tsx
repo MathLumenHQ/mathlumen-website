@@ -58,6 +58,9 @@ export default function RootLayout({
     >
       <head>
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        {/* Preconnect to CDN origins to reduce connection latency */}
+        <link rel="preconnect" href="https://ik.imagekit.io" />
+        <link rel="dns-prefetch" href="https://ik.imagekit.io" />
       </head>
       <body className="min-h-screen flex flex-col bg-ink text-paper font-body antialiased">
         {/* Skip to main content — sr-only, visible on focus */}
