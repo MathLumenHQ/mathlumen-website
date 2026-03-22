@@ -18,6 +18,8 @@ const CATEGORY_DESCRIPTIONS: Record<string, string> = {
     "Explore the linear algebra, calculus, probability, and information theory that power transformers, neural networks, gradient descent, and the ongoing AI revolution.",
   essay:
     "Long-form essays on mathematical beauty, philosophy, and culture — exploring why mathematics matters and how it shapes our understanding of the universe.",
+  news:
+    "Fields Medals, Abel Prizes, major theorem announcements, and the latest breakthroughs from mathematics departments and research institutes around the world.",
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -26,6 +28,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   applied: "Applied Math",
   "ai-ml": "AI & ML",
   essay: "Essays",
+  news: "News",
 };
 
 const VALID_CATEGORIES = Object.keys(CATEGORY_DESCRIPTIONS);

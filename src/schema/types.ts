@@ -32,7 +32,7 @@ export type ArticleWithAuthorAndTags = ArticleWithAuthor & {
 
 /* ─── Category Union Type ────────────────────────────────────────────── */
 
-export type Category = "history" | "research" | "applied" | "ai-ml" | "essay";
+export type Category = "history" | "research" | "applied" | "ai-ml" | "essay" | "news";
 
 /* ─── API Response Types ─────────────────────────────────────────────── */
 

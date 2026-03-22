@@ -16,6 +16,7 @@ export const CATEGORIES = [
   { value: "applied", label: "Applied Math", description: "Mathematics in practice and engineering" },
   { value: "ai-ml", label: "AI & ML", description: "The mathematics powering artificial intelligence" },
   { value: "essay", label: "Essays", description: "Reflections on mathematical beauty and philosophy" },
+  { value: "news", label: "News", description: "Prizes, breakthroughs, and latest developments in mathematics" },
 ] as const;
 
 export const ARTICLES_PER_PAGE = 12;
@@ -29,6 +30,7 @@ export const NAV_CATEGORY_LINKS = [
   { href: "/category/applied", label: "Applied Math" },
   { href: "/category/ai-ml", label: "AI & ML" },
   { href: "/category/essay", label: "Essays" },
+  { href: "/news", label: "News" },
   { href: "/tools/mltex", label: "MLTeX" },
 ] as const;
 
@@ -41,6 +43,7 @@ export const NAV_LINKS = [
   { href: "/category/applied", label: "Applied Math" },
   { href: "/category/ai-ml", label: "AI & ML" },
   { href: "/category/essay", label: "Essays" },
+  { href: "/news", label: "News" },
   { href: "/tools/mltex", label: "MLTeX" },
   { href: "/authors", label: "Authors" },
   { href: "/about", label: "About" },
@@ -60,6 +63,7 @@ export const FOOTER_LINKS = {
     { href: "/category/applied", label: "Applied Math" },
     { href: "/category/ai-ml", label: "AI & ML" },
     { href: "/category/essay", label: "Essays" },
+    { href: "/news", label: "News" },
   ],
   tools: [
     { href: "/tools/mltex", label: "MLTeX" },

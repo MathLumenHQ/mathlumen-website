@@ -114,7 +114,7 @@ export async function getRelatedArticles(
       .where(
         and(
           eq(articles.isPublished, true),
-          eq(articles.category, category as "history" | "research" | "applied" | "ai-ml" | "essay"),
+          eq(articles.category, category as "history" | "research" | "applied" | "ai-ml" | "essay" | "news"),
           ne(articles.id, articleId)
         )
       )

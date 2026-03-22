@@ -24,11 +24,9 @@ export default async function TopicsPage() {
   // Fetch top 5 articles per category in parallel
   const categoryResults = await Promise.all(
     CATEGORIES.map((cat) =>
-      getArticles({ category: cat.value as Category, limit: 5 }).then((r) => ({
-        ...cat,
-        articles: r.data,
-        total: r.total,
-      }))
+      getArticles({ category: cat.value as Category, limit: 5 })
+        .then((r) => ({ ...cat, articles: r.data, total: r.total }))
+        .catch(() => ({ ...cat, articles: [], total: 0 }))
     )
   );
 

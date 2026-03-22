@@ -18,6 +18,7 @@ const categoryStyles: Record<Category, string> = {
   applied: "border-[#4aff9e]/40 text-[#4aff9e] bg-[#4aff9e]/8",
   "ai-ml": "border-[#9e4aff]/40 text-[#9e4aff] bg-[#9e4aff]/8",
   essay: "border-paper/20 text-muted bg-paper/5",
+  news: "border-[#ff8c42]/40 text-[#ff8c42] bg-[#ff8c42]/8",
 };
 
 const sizeStyles: Record<BadgeSize, string> = {

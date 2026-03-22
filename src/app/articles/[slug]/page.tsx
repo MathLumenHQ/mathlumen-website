@@ -10,9 +10,7 @@ import { SITE_URL } from "@/lib/constants";
 import { getInternalLinks } from "@/lib/internal-links";
 import { extractFaqPairs, buildFaqSchema } from "@/lib/faq-schema";
 import { Badge } from "@/components/ui/Badge";
-import { Skeleton } from "@/components/ui/Skeleton";
-import { OptimizedImage } from "@/components/ui/OptimizedImage";
-import { getPlaceholderUrl } from "@/lib/image-utils";
+import { CoverImage } from "@/components/article/CoverImage";
 import { ProgressBar } from "@/components/article/ProgressBar";
 import { TableOfContents } from "@/components/article/TableOfContents";
 import { ShareButtons } from "@/components/article/ShareButtons";
@@ -33,6 +31,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   applied: "Applied Math",
   "ai-ml": "AI & ML",
   essay: "Essays",
+  news: "News",
 };
 
 export const revalidate = 3600;
@@ -242,19 +241,14 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               </details>
             )}
 
-            {/* Cover image */}
+            {/* Cover image — sourced from database/frontmatter, never from MDX body */}
             {article.coverImageUrl && (
-              <div className="relative h-64 md:h-96 mb-10 -mx-4 sm:mx-0">
-                <OptimizedImage
-                  src={article.coverImageUrl}
-                  alt={article.title}
-                  fill
-                  className="object-cover sm:rounded-md"
-                  priority
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 75vw, 800px"
-                  fallbackSrc={getPlaceholderUrl(article.category)}
-                />
-              </div>
+              <CoverImage
+                src={article.coverImageUrl}
+                alt={article.title}
+                caption={mdxResult?.frontmatter.coverImageCaption}
+                category={article.category}
+              />
             )}
 
             {/* MDX Content */}

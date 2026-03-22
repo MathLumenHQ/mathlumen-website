@@ -29,7 +29,8 @@ export async function getInternalLinks(
     | "research"
     | "applied"
     | "ai-ml"
-    | "essay";
+    | "essay"
+    | "news";
 
   try {
     // ── 1. Same category ──────────────────────────────────────────────────

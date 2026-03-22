@@ -152,7 +152,6 @@ const TEMPLATES = [
   },
 ];
 
-// eslint-disable-next-line no-useless-escape
 const DEFAULT_CONTENT = `# MLTeX Editor
 
 Write LaTeX with real-time preview. Supports inline math, display equations, matrices, and more.

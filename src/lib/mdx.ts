@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { createElement } from "react";
 import type { ReactElement } from "react";
 import { compileMDX } from "next-mdx-remote/rsc";
 import remarkMath from "remark-math";
@@ -24,7 +25,6 @@ function findArticleFile(slug: string): string | null {
   const all = fs.readdirSync(CONTENT_DIR, { recursive: true }) as string[];
   const match = all.find((f) => f.endsWith(`${slug}.mdx`));
   if (!match) return null;
-  // readdirSync returns relative paths on Node 18.17+ — join with root
   return path.join(CONTENT_DIR, match);
 }
 
@@ -38,6 +38,12 @@ interface ArticleFrontmatter {
   readTimeMinutes: number;
   tags: string[];
   coverImageUrl?: string;
+  /**
+   * Photo credit or caption for the cover image.
+   * Displayed below the hero image on the article page.
+   * Example: "Photo: Peter Badge/Typos1/The Abel Prize 2026"
+   */
+  coverImageCaption?: string;
 }
 
 interface TocHeading {
@@ -53,16 +59,32 @@ interface CompiledArticle {
 }
 
 /**
- * Compile MDX source string into a React element with full remark/rehype pipeline.
+ * Extract the coverImageUrl from a raw frontmatter string without a full YAML parse.
+ * Handles both single-quoted and double-quoted values.
  */
-const mdxComponents = {
-  img: MdxImage as never,
-};
+function extractCoverUrl(frontmatterSection: string): string | undefined {
+  const match = frontmatterSection.match(/coverImageUrl:\s*["']([^"']+)["']/);
+  return match?.[1];
+}
 
-async function compileMdxContent(source: string) {
+/**
+ * Build the MDX component map.
+ *
+ * When coverUrl is provided, any <img> whose src matches it renders nothing —
+ * this is the deduplication guard that prevents the cover image from appearing
+ * a second time if an author accidentally includes it in the article body.
+ */
+function createMdxComponents(coverUrl?: string) {
+  function ImageGuard(props: { src: string; alt: string; title?: string }) {
+    return createElement(MdxImage, { ...props, skipUrl: coverUrl });
+  }
+  return { img: ImageGuard as never };
+}
+
+async function compileMdxContent(source: string, coverUrl?: string) {
   return compileMDX<ArticleFrontmatter>({
     source,
-    components: mdxComponents,
+    components: createMdxComponents(coverUrl),
     options: {
       parseFrontmatter: true,
       mdxOptions: {
@@ -116,6 +138,10 @@ export function extractHeadings(source: string): TocHeading[] {
 /**
  * Read and compile an MDX article file by slug.
  * Returns compiled React content, frontmatter, and extracted headings for ToC.
+ *
+ * The cover image URL is extracted from the frontmatter before compilation so
+ * that the MdxImage deduplication guard can be wired in at compile time —
+ * no React context required.
  */
 export async function getArticleContent(slug: string): Promise<CompiledArticle | null> {
   try {
@@ -127,13 +153,16 @@ export async function getArticleContent(slug: string): Promise<CompiledArticle |
 
     const raw = fs.readFileSync(filePath, "utf-8");
 
-    // Extract headings from the body (after frontmatter)
+    // Locate the closing --- of the frontmatter block
     const frontmatterEnd = raw.indexOf("---", 3);
+    const frontmatterSection = frontmatterEnd !== -1 ? raw.slice(4, frontmatterEnd) : "";
     const body = frontmatterEnd !== -1 ? raw.slice(frontmatterEnd + 3).trim() : raw;
-    const headings = extractHeadings(body);
 
-    // Compile MDX
-    const { content, frontmatter } = await compileMdxContent(raw);
+    // Extract cover URL early so we can wire dedup into the img component
+    const coverUrl = extractCoverUrl(frontmatterSection);
+
+    const headings = extractHeadings(body);
+    const { content, frontmatter } = await compileMdxContent(raw, coverUrl);
 
     return { content, frontmatter, headings };
   } catch (error) {
@@ -145,8 +174,7 @@ export async function getArticleContent(slug: string): Promise<CompiledArticle |
 
 /**
  * Read the raw MDX body (after frontmatter) for a given slug.
- * Returns null if the file is not found.
- * Used by faq-schema extraction without re-compiling MDX.
+ * Used by FAQ schema extraction without re-compiling MDX.
  */
 export function getArticleRawBody(slug: string): string | null {
   try {

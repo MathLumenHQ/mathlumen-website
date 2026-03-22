@@ -27,6 +27,7 @@ export const categoryEnum = pgEnum("category", [
   "applied",
   "ai-ml",
   "essay",
+  "news",
 ]);
 
 /** Authors who write for MathLumen */

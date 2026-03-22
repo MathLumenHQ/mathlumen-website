@@ -7,12 +7,15 @@ How to write articles and add new authors to MathLumen.
 ## Table of Contents
 
 1. [How Articles Work](#how-articles-work)
-2. [Writing an Article — Step by Step](#writing-an-article--step-by-step)
-3. [MDX Formatting Reference](#mdx-formatting-reference)
-4. [Uploading the Cover Image](#uploading-the-cover-image)
-5. [Adding the Article to the Database](#adding-the-article-to-the-database)
-6. [Adding a New Author](#adding-a-new-author)
-7. [Publishing Checklist](#publishing-checklist)
+2. [The Article Helper Script](#the-article-helper-script)
+3. [Writing an Article — Step by Step](#writing-an-article--step-by-step)
+4. [News Articles — Special Guide](#news-articles--special-guide)
+5. [MDX Formatting Reference](#mdx-formatting-reference)
+6. [Uploading the Cover Image](#uploading-the-cover-image)
+7. [Adding the Article to the Database](#adding-the-article-to-the-database)
+8. [Applying Database Migrations](#applying-database-migrations)
+9. [Adding a New Author](#adding-a-new-author)
+10. [Publishing Checklist](#publishing-checklist)
 
 ---
 
@@ -22,10 +25,55 @@ Every article in MathLumen has two parts that must both exist:
 
 | Part | Location | Purpose |
 |------|----------|---------|
-| **MDX file** | `content/articles/your-slug.mdx` | The full article text, LaTeX, code blocks |
+| **MDX file** | `content/articles/YYYY/MM/your-slug.mdx` | The full article text, LaTeX, code blocks |
 | **Database row** | Supabase `articles` table | Metadata: title, excerpt, cover image, category, author, featured |
 
 The MDX file holds the written content. The database holds everything the homepage, article cards, sitemap, and RSS feed need. **Both must be created** for an article to appear and render correctly.
+
+**File organisation — year/month folders:**
+
+```
+content/
+└── articles/
+    ├── 2026/
+    │   ├── 01/
+    │   │   └── spectral-methods-pde.mdx
+    │   ├── 02/
+    │   │   └── ramanujan-infinite-series.mdx
+    │   └── 03/
+    │       ├── riemann-hypothesis-2026-status-report.mdx
+    │       └── fields-medal-2026.mdx   ← your new article
+    └── 2025/
+        └── ...
+```
+
+The URL is always `/articles/your-slug` — the folder structure does **not** affect the URL.
+
+---
+
+## The Article Helper Script
+
+The fastest way to create a new article file is the built-in scaffold script:
+
+```bash
+pnpm run new-article "Your Article Title" category
+```
+
+**Examples:**
+
+```bash
+pnpm run new-article "Fields Medal 2026 Announced" news
+pnpm run new-article "Fourier Transform Deep Dive" applied
+pnpm run new-article "Emmy Noether's Legacy" history
+```
+
+This will:
+1. Slugify the title automatically (`fields-medal-2026-announced`)
+2. Create the file at `content/articles/YYYY/MM/slug.mdx` using today's date
+3. Pre-fill the frontmatter template
+4. Print next-step instructions
+
+Valid categories: `history` | `research` | `applied` | `ai-ml` | `essay` | `news`
 
 ---
 
@@ -41,7 +89,7 @@ The slug is the URL-friendly identifier. It must be:
 
 **Examples:**
 ```
-riemann-hypothesis-2026
+fields-medal-2026-announced
 fourier-transform-explained
 calculus-of-variations
 ```
@@ -52,9 +100,14 @@ The article will be available at: `https://mathlumen.com/articles/your-slug`
 
 ### Step 2 — Create the MDX file
 
-Create a new file at:
+Use the helper script (recommended):
+```bash
+pnpm run new-article "Your Article Title" category
 ```
-content/articles/your-slug.mdx
+
+Or create the file manually at:
+```
+content/articles/YYYY/MM/your-slug.mdx
 ```
 
 Start with the **frontmatter** (the section between `---` lines), then write the article below it.
@@ -84,7 +137,7 @@ Your article content starts here...
 | `title` | Yes | Full title in quotes. Can use special characters. |
 | `subtitle` | No | Short italic line shown below the title |
 | `slug` | Yes | Must exactly match the filename (without `.mdx`) |
-| `category` | Yes | Must be one of: `history`, `research`, `applied`, `ai-ml`, `essay` |
+| `category` | Yes | Must be one of: `history`, `research`, `applied`, `ai-ml`, `essay`, `news` |
 | `excerpt` | Yes | 1–2 sentences. Used in cards, RSS, and SEO meta description |
 | `publishedAt` | Yes | Format: `"YYYY-MM-DD"` |
 | `readTimeMinutes` | Yes | Estimate: ~200 words per minute |
@@ -100,6 +153,7 @@ Your article content starts here...
 | `applied` | Numerical methods, scientific computing, engineering math |
 | `ai-ml` | Machine learning theory, neural networks, AI mathematics |
 | `essay` | Opinion, beauty, philosophy of mathematics |
+| `news` | Prizes, awards, theorem announcements, recent breakthroughs |
 
 ---
 
@@ -133,12 +187,6 @@ y = np.exp(-x**2)
 ```
 ````
 
-```markdown
-```javascript
-const result = Math.PI * r ** 2;
-```
-````
-
 **Bold and italic:**
 ```markdown
 **bold text**
@@ -164,6 +212,71 @@ const result = Math.PI * r ** 2;
 - Bullet one
 - Bullet two
 ```
+
+---
+
+## News Articles — Special Guide
+
+The `news` category is for time-sensitive mathematics announcements. It has a dedicated page at `/news` and appears in the **"Latest News"** section on the homepage when articles exist.
+
+### What belongs in `news`
+
+| Type | Examples |
+|------|---------|
+| **Major prizes** | Fields Medal, Abel Prize, Wolf Prize, Breakthrough Prize announcements |
+| **Proof announcements** | A major open problem resolved or major progress claimed |
+| **Conference announcements** | ICM, major symposia, noteworthy talks |
+| **Institutional news** | New math institutes, large research grants, notable appointments |
+| **arXiv highlights** | A preprint that is generating significant buzz in the community |
+
+### News article frontmatter template
+
+```yaml
+---
+title: "Fields Medal 2026 Awarded to [Mathematician]"
+subtitle: "Recognition for breakthrough work in [field]"
+slug: fields-medal-2026-announced
+category: news
+excerpt: "The 2026 Fields Medal has been awarded to [name] for their groundbreaking contributions to [topic], announced at the International Congress of Mathematicians."
+publishedAt: "2026-03-22"
+readTimeMinutes: 3
+tags: [fields-medal, prize, imo, number-theory]
+coverImageUrl: "https://ik.imagekit.io/netrv2whci/mathlumen/article-covers/fields-medal-2026.png"
+---
+```
+
+### News article structure
+
+News articles should be shorter than regular articles (3–6 min read):
+
+```markdown
+## What Happened
+
+One or two paragraphs stating the announcement clearly and factually.
+
+## Why It Matters
+
+2–3 paragraphs on the mathematical significance. What problem was solved?
+What field does this advance? Why do mathematicians care?
+
+## About the Recipient / Work
+
+Brief background on the mathematician or the result. Link to the original paper
+or official announcement if available.
+
+## Further Reading
+
+- [Official ICM announcement](https://...)
+- [Preprint on arXiv](https://...)
+```
+
+### Quick-create a news article
+
+```bash
+pnpm run new-article "Fields Medal 2026 Awarded to [Name]" news
+```
+
+Then fill in the frontmatter and write the short announcement.
 
 ---
 
@@ -240,49 +353,18 @@ Use that URL in your MDX frontmatter `coverImageUrl` and in the database row.
 
 The MDX file alone does NOT make the article appear on the homepage or article listing. You must also add it to the database.
 
-### Method A — Add to the seed file (for local + fresh deploys)
-
-Open `seed/index.ts` and add your article to the `articleData` array:
-
-```typescript
-{
-  slug: "your-slug",
-  title: "Your Full Article Title Here",
-  subtitle: "Your subtitle",
-  excerpt: "Your 1-2 sentence summary shown on cards.",
-  category: "essay" as const,
-  tags: ["your-tag", "another-tag"],
-  authorId: akhilesh.id,
-  coverImageUrl: "https://ik.imagekit.io/netrv2whci/mathlumen/article-covers/your-slug.png",
-  publishedAt: new Date("2026-03-20"),
-  isPublished: true,
-  readTimeMinutes: 8,
-  viewCount: 0,
-  featured: false,  // set to true to show in the featured section
-},
-```
-
-Then run:
-```bash
-pnpm run seed
-```
-
-> **Warning:** The seed script clears ALL existing data before inserting. Only use this when setting up fresh, or when you're OK resetting everything.
-
----
-
-### Method B — Insert directly into Supabase (for live production sites)
+### Method A — Insert directly into Supabase (recommended for production)
 
 This is the safe way to add an article to a running production database without wiping existing data.
 
 1. Go to your **Supabase Dashboard → SQL Editor**
-2. Run this query (replace all values in `< >`):
+2. Run the queries below (replace all values):
 
 ```sql
 -- Step 1: Get your author ID
 SELECT id FROM authors WHERE slug = 'akhilesh-yadav';
 
--- Step 2: Insert the article (paste the ID from Step 1)
+-- Step 2: Insert the article (paste the ID from Step 1 into author_id)
 INSERT INTO articles (
   slug,
   title,
@@ -302,7 +384,7 @@ INSERT INTO articles (
   'Your Full Article Title Here',
   'Your subtitle',
   'Your 1-2 sentence excerpt.',
-  'essay',
+  'essay',                          -- change to: history | research | applied | ai-ml | essay | news
   ARRAY['your-tag', 'another-tag'],
   '<paste-author-uuid-here>',
   'https://ik.imagekit.io/netrv2whci/mathlumen/article-covers/your-slug.png',
@@ -310,16 +392,107 @@ INSERT INTO articles (
   true,
   8,
   0,
-  false
+  false                             -- set to true to show in the featured section
 );
 ```
 
 3. Verify it inserted:
 ```sql
-SELECT slug, title, is_published FROM articles ORDER BY created_at DESC LIMIT 5;
+SELECT slug, title, category, is_published FROM articles ORDER BY created_at DESC LIMIT 5;
 ```
 
-After inserting, the article will appear on the site within 1 hour (due to `revalidate = 3600`). To see it immediately, trigger a Vercel redeploy.
+**For a news article**, use `'news'` as the category value:
+```sql
+  category: 'news',
+```
+
+After inserting, the article will appear on the site within 1 hour (due to `revalidate = 3600`). To see it immediately, trigger a Vercel redeploy or run `pnpm run build` locally.
+
+---
+
+### Method B — Add to the seed file (for local + fresh deploys only)
+
+Open `seed/index.ts` and add your article to the `articleData` array:
+
+```typescript
+{
+  slug: "fields-medal-2026-announced",
+  title: "Fields Medal 2026 Awarded to [Mathematician]",
+  subtitle: "Recognition for breakthrough work in [field]",
+  excerpt: "The 2026 Fields Medal has been awarded to [name] for contributions to [topic].",
+  category: "news" as const,
+  tags: ["fields-medal", "prize"],
+  authorId: akhilesh.id,
+  coverImageUrl: "https://ik.imagekit.io/netrv2whci/mathlumen/article-covers/fields-medal-2026.png",
+  publishedAt: new Date("2026-03-22"),
+  isPublished: true,
+  readTimeMinutes: 3,
+  viewCount: 0,
+  featured: false,
+},
+```
+
+Then run:
+```bash
+CONFIRM_SEED=yes pnpm run seed
+```
+
+> **Warning:** The seed script clears ALL existing data before inserting. Only use this for fresh local setups, never on production.
+
+---
+
+## Applying Database Migrations
+
+When a new database feature is introduced (such as a new category enum value), a migration SQL file is created in `drizzle/`. These must be applied to your Supabase database before you can use the new feature.
+
+### Current pending migration
+
+**`drizzle/0001_add_news_category.sql`** — adds the `news` value to the category enum.
+
+**You must run this before inserting any news articles.** Until it is applied, any attempt to insert a `news` article will fail with:
+```
+invalid input value for enum category: "news"
+```
+
+### How to apply a migration
+
+**Option A — Supabase SQL Editor (recommended)**
+
+1. Go to your **Supabase Dashboard → SQL Editor**
+2. Paste and run the contents of the migration file:
+
+```sql
+ALTER TYPE "category" ADD VALUE IF NOT EXISTS 'news';
+```
+
+3. Verify it worked:
+```sql
+SELECT enum_range(NULL::category);
+-- should include: {history,research,applied,ai-ml,essay,news}
+```
+
+**Option B — drizzle-kit push**
+
+```bash
+pnpm run db:push
+```
+
+This applies all pending schema changes from your Drizzle schema to the database. It is safe to run at any time — it will not drop data.
+
+**Option C — drizzle-kit migrate**
+
+```bash
+pnpm run db:migrate
+```
+
+Applies migration files from the `drizzle/` folder in order. Use this if you prefer explicit migration files over schema push.
+
+### Migration history
+
+| File | What it does | Status |
+|------|-------------|--------|
+| `drizzle/0000_initial.sql` | Creates all tables, enums, and tsvector search index | Applied at initial setup |
+| `drizzle/0001_add_news_category.sql` | Adds `news` to the category enum | **Apply before using news category** |
 
 ---
 
@@ -411,30 +584,11 @@ const [akhilesh, jane] = await db
   .returning();
 ```
 
-Then update the summary log:
-```typescript
-console.log(`  Created 2 authors`);
-```
-
-### Step 5 — Assign articles to the new author
-
-When adding articles written by the new author, use `jane.id` (seed file) or their UUID (SQL):
-
-```sql
--- Find the new author's UUID
-SELECT id FROM authors WHERE slug = 'jane-smith';
-
--- Use that UUID when inserting their articles
-```
-
-### Step 6 — Verify the author page
+### Step 5 — Verify the author page
 
 After adding, visit: `https://mathlumen.com/authors/jane-smith`
 
-The page will show:
-- Their name, bio, and avatar
-- Links to Twitter, LinkedIn, and website
-- All articles they have written
+The page will show their name, bio, avatar, links, and all articles they have written.
 
 ---
 
@@ -457,11 +611,12 @@ Before marking an article `is_published: true`, verify:
 - [ ] Cover image is 1200×630 px
 
 **Database**
+- [ ] If using `news` category: migration `0001_add_news_category.sql` has been applied
 - [ ] Article row exists in the `articles` table
 - [ ] `is_published` is `true`
 - [ ] `published_at` date is set
 - [ ] `author_id` points to a valid author
-- [ ] `category` is one of the five valid values
+- [ ] `category` is one of the six valid values: `history`, `research`, `applied`, `ai-ml`, `essay`, `news`
 
 **After publishing**
 - [ ] Article appears on homepage (may take up to 1 hour, or trigger a redeploy)
@@ -469,3 +624,5 @@ Before marking an article `is_published: true`, verify:
 - [ ] Article page renders LaTeX correctly
 - [ ] Article appears in `/api/rss`
 - [ ] Article appears in `/sitemap.xml`
+- [ ] If news: article appears on `/news` page
+- [ ] If news: "Latest News" section visible on homepage (only shows when ≥1 news article exists)

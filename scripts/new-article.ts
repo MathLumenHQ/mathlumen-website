@@ -4,13 +4,13 @@
  * Usage:
  *   pnpm run new-article "My Article Title" ai-ml
  *
- * Categories: history | research | applied | ai-ml | essay
+ * Categories: history | research | applied | ai-ml | essay | news
  */
 
 import fs from "node:fs";
 import path from "node:path";
 
-const VALID_CATEGORIES = ["history", "research", "applied", "ai-ml", "essay"] as const;
+const VALID_CATEGORIES = ["history", "research", "applied", "ai-ml", "essay", "news"] as const;
 type Category = (typeof VALID_CATEGORIES)[number];
 
 function slugify(title: string): string {

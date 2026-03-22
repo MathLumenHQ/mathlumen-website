@@ -17,8 +17,6 @@ import type { Category } from "@/schema/types";
    CONTENT PILLARS DATA
    ═══════════════════════════════════════════════════════════════════════ */
 
-// LaTeX formula — defined as constant to prevent linter from stripping the backslash
-// eslint-disable-next-line no-useless-escape
 const HERO_FORMULA = "e^{i\\pi} + 1 = 0";
 
 const PILLARS = [
@@ -254,6 +252,11 @@ export default function HomePage() {
 
       <Separator gold className="max-w-7xl mx-auto" />
 
+      {/* ── Section 3b: LATEST NEWS ──────────────────────────────────── */}
+      <Suspense fallback={null}>
+        <LatestNewsSection />
+      </Suspense>
+
       {/* ── Section 4: LATEST BY CATEGORY ───────────────────────────── */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="mb-10">
@@ -449,6 +452,44 @@ async function LatestArticles() {
         <ArticleCard key={article.id} article={article} />
       ))}
     </div>
+  );
+}
+
+/** Latest News — shows only when news articles exist */
+async function LatestNewsSection() {
+  let result;
+  try {
+    result = await getArticles({ category: "news", limit: 3, sort: "newest" });
+  } catch {
+    return null;
+  }
+  if (result.data.length === 0) return null;
+
+  return (
+    <>
+      <Separator gold className="max-w-7xl mx-auto" />
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3">
+            <span className="w-2 h-2 rounded-full bg-[#ff8c42] animate-pulse shrink-0" aria-hidden="true" />
+            <h2 className="font-display text-3xl font-bold text-paper">
+              Latest News
+            </h2>
+          </div>
+          <Link
+            href="/news"
+            className="text-sm text-gold hover:text-gold-light transition-colors duration-200 font-mono"
+          >
+            All news &rarr;
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {result.data.map((article) => (
+            <ArticleCard key={article.id} article={article} />
+          ))}
+        </div>
+      </section>
+    </>
   );
 }
 

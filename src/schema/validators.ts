@@ -58,7 +58,7 @@ export const searchRequestSchema = z.object({
 });
 
 export const articleQuerySchema = z.object({
-  category: z.enum(["history", "research", "applied", "ai-ml", "essay"]).optional(),
+  category: z.enum(["history", "research", "applied", "ai-ml", "essay", "news"]).optional(),
   tag: z.string().optional(),
   limit: z.coerce.number().int().min(1).max(50).default(12),
   offset: z.coerce.number().int().min(0).default(0),
