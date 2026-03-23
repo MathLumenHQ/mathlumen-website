@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Crimson_Pro, DM_Mono } from "next/font/google";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Navigation } from "@/components/layout/Navigation";
 import { Footer } from "@/components/layout/Footer";
 import { SearchDialog } from "@/components/forms/SearchDialog";
@@ -79,6 +80,7 @@ export default function RootLayout({
         </main>
 
         <Footer />
+        <SpeedInsights />
       </body>
     </html>
   );
