@@ -16,6 +16,7 @@
     "seed": "tsx --env-file=.env seed/index.ts",
     "upload-image": "tsx scripts/upload-image.ts",
     "new-article": "tsx scripts/new-article.ts",
+    "send-newsletter": "tsx --env-file=.env scripts/send-newsletter.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },
@@ -27,8 +28,10 @@
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-tabs": "^1.1.13",
     "@radix-ui/react-visually-hidden": "^1.2.4",
+    "@supabase/supabase-js": "^2.99.3",
     "@types/katex": "^0.16.8",
     "@types/mdx": "2.0.13",
+    "@vercel/speed-insights": "^2.0.0",
     "clsx": "2.1.1",
     "date-fns": "4.1.0",
     "drizzle-orm": "0.38.4",
@@ -47,6 +50,7 @@
     "remark-gfm": "^4.0.1",
     "remark-math": "^6.0.0",
     "remark-parse": "^11.0.0",
+    "resend": "^6.9.4",
     "tailwind-merge": "3.0.2",
     "unified": "^11.0.5",
     "zod": "3.24.2"

@@ -86,6 +86,19 @@ export const subscribers = pgTable("subscribers", {
   subscribedAt: timestamp("subscribed_at", { withTimezone: true }).defaultNow().notNull(),
   confirmed: boolean("confirmed").default(true).notNull(),
   unsubscribedAt: timestamp("unsubscribed_at", { withTimezone: true }),
+  unsubscribeToken: uuid("unsubscribe_token").defaultRandom().notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+});
+
+/** Record of newsletter sends */
+export const newsletterSends = pgTable("newsletter_sends", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  subject: text("subject").notNull(),
+  previewText: text("preview_text"),
+  articleSlug: varchar("article_slug", { length: 512 }),
+  sentAt: timestamp("sent_at", { withTimezone: true }).defaultNow().notNull(),
+  recipientCount: integer("recipient_count").default(0).notNull(),
+  status: varchar("status", { length: 32 }).default("sent").notNull(),
 });
 
 /** Curated content tags */

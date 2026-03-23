@@ -10,6 +10,10 @@ const envSchema = z.object({
   NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT: z.string().url().optional(),
   IMAGEKIT_PUBLIC_KEY: z.string().startsWith("public_").optional(),
   IMAGEKIT_PRIVATE_KEY: z.string().startsWith("private_").optional(),
+  // Newsletter
+  RESEND_API_KEY: z.string().startsWith("re_").optional(),
+  NEWSLETTER_SECRET: z.string().min(16).optional(),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;
