@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@supabase/supabase-js";
-import { resend, FROM_ADDRESS, buildNewsletterHtml } from "@/lib/newsletter";
+import { getResendClient, FROM_ADDRESS, buildNewsletterHtml } from "@/lib/newsletter";
 import { SITE_URL } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { newsletterSends } from "@/schema/tables";
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
       };
     });
 
-    const { data: batchResult, error: batchError } = await resend.batch.send(emails);
+    const { data: batchResult, error: batchError } = await getResendClient().batch.send(emails);
     if (batchError) {
       errors.push(`Batch ${i / BATCH_SIZE + 1}: ${batchError.message}`);
     } else {

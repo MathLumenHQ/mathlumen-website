@@ -1,7 +1,12 @@
 import { Resend } from "resend";
 import { SITE_NAME, SITE_URL } from "./constants";
 
-export const resend = new Resend(process.env.RESEND_API_KEY);
+/** Lazy getter — instantiated at request time, not at build time. */
+export function getResendClient(): Resend {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) throw new Error("RESEND_API_KEY is not set");
+  return new Resend(key);
+}
 
 export const FROM_ADDRESS = `${SITE_NAME} <newsletter@mathlumen.com>`;
 
