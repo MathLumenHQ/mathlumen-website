@@ -5,12 +5,14 @@ import imagekitLoader from "@/lib/imagekit-loader";
 
 interface MdxImageProps {
   src: string;
-  /** Accessibility alt text — always describe the image content for screen readers */
+  /**
+   * Accessibility alt text — always describe the image content for screen readers.
+   * In MDX: ![This is the alt](https://...)
+   */
   alt: string;
   /**
-   * Display caption shown below the image.
-   * In MDX, write:  ![Alt text](https://... "Caption text")
-   *                              ↑ alt        ↑ title → caption
+   * Visible caption rendered below the image.
+   * In MDX: ![Alt text](https://... "This becomes the caption")
    */
   title?: string;
   /**
@@ -24,16 +26,30 @@ interface MdxImageProps {
 /**
  * Inline image component used inside MDX article bodies.
  *
+ * Renders as a block-level <figure> — NOT wrapped in any inline element.
+ * The parent mdx.ts deliberately strips the default <p> wrapper that MDX
+ * adds around standalone images, so this component must never be used
+ * inside a <p> or any other inline context.
+ *
  * Caption syntax in MDX:
- *   ![Alt text describing image](https://ik.imagekit.io/.../image.jpg "Caption / credit line")
+ *   ![Alt text](https://ik.imagekit.io/.../image.jpg "Caption / credit line")
  *
  * The `alt` attribute is used for accessibility and SEO (never displayed visually).
  * The `title` attribute becomes the visible caption rendered below the image.
+ *
+ * Overflow behaviour:
+ *   Images can be any intrinsic size (e.g. 1792×1024 from AI generation).
+ *   Three layers of CSS prevent them from ever escaping the article column:
+ *     1. figure  — w-full max-w-full overflow-hidden  (outermost boundary)
+ *     2. div     — w-full max-w-full overflow-hidden  (visual container)
+ *     3. img     — w-full h-auto max-w-full           (element-level cap)
  */
 export function MdxImage({ src, alt, title, skipUrl }: MdxImageProps) {
-  // Deduplication guard — silently drop the image if it is the cover image.
-  // This catches the case where an author places the cover image in the body.
-  if (skipUrl && src === skipUrl) return null;
+  // Deduplication guard — silently drop if this is the cover image.
+  // Strip query strings (e.g. ?updatedAt=...) from both URLs before comparing
+  // so ImageKit cache-busting parameters don't cause a false mismatch.
+  const normalise = (url: string) => url.split("?")[0];
+  if (skipUrl && normalise(src) === normalise(skipUrl)) return null;
 
   const isImageKit =
     src.includes("ik.imagekit.io") || !src.startsWith("http");
@@ -44,19 +60,36 @@ export function MdxImage({ src, alt, title, skipUrl }: MdxImageProps) {
       : src;
 
   return (
-    <figure className="my-10 not-prose">
-      <div className="relative overflow-hidden border border-gold/[0.12]">
+    // not-prose      — prevents Tailwind Typography overriding figure/img styles
+    // w-full         — figure fills the article column, never wider
+    // max-w-full     — hard cap: cannot overflow parent under any circumstance
+    // overflow-hidden — clips anything that still escapes (belt-and-suspenders)
+    <figure className="my-10 not-prose w-full max-w-[800px] mx-auto overflow-hidden">
+
+      {/* Visual container — border + radius live here.
+          w-full + max-w-full ensure it never exceeds the figure width. */}
+      <div className="relative w-full overflow-hidden border border-gold/[0.12] rounded-md">
         <Image
           src={resolvedSrc}
           alt={alt || ""}
-          width={800}
-          height={450}
-          sizes="(max-width: 768px) 100vw, 800px"
-          className="w-full block"
+          // width/height represent the intrinsic source dimensions.
+          // Next.js uses them only for aspect-ratio calculation —
+          // the actual rendered size is controlled by the CSS classes below.
+          // Set to 1792×1024 to correctly handle wide AI-generated images.
+          width={1792}
+          height={1024}
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 800px"
+          style={{ width: "100%", height: "auto" }} 
+          // w-full     — fills container div horizontally
+          // h-auto     — preserves aspect ratio, never distorts
+          // block      — removes inline baseline gap beneath the image
+          // max-w-full — explicit safety net at the img element level
+          className="w-full h-auto block max-w-full"
           loader={isImageKit ? imagekitLoader : undefined}
           loading="lazy"
         />
       </div>
+
       {title && (
         <figcaption className="mt-2 text-center text-xs text-muted font-mono leading-relaxed">
           {title}

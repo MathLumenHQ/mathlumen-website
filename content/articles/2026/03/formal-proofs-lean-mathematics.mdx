@@ -1,0 +1,297 @@
+---
+title: "The Formal Proof Revolution: How Lean Is Rebuilding the Foundations of Mathematics"
+subtitle: "When a computer checks every step, what does it mean to know something is true?"
+slug: formal-proofs-lean-mathematics
+category: research
+excerpt: "Mathematicians are now encoding entire research papers into Lean, a proof assistant that verifies logic at the level of axioms. We explore the mathematics of formal verification — type theory, dependent types, and what it means for the future of mathematical truth."
+publishedAt: "2026-03-28"
+readTimeMinutes: 13
+tags: [foundations-of-mathematics, type-theory, formal-proofs, lean, logic]
+coverImageUrl: "https://ik.imagekit.io/netrv2whci/mathlumen/article-covers/formal-proofs-lean-mathematics.png"
+
+---
+
+Mathematics has always rested on an implicit social contract. A proof is considered correct when sufficiently many sufficiently careful mathematicians read it and say so. For most of history, this was enough. Euclid's *Elements* stood unchallenged for two millennia. Newton and Leibniz invented calculus on foundations that were, by modern standards, completely wrong — yet the answers were right, and progress continued for 150 years before anyone cared to fix the foundations.
+
+That era may be ending. In 2020, mathematician Peter Scholze posed a formal challenge: could the Lean theorem prover — a piece of software that checks mathematical proofs at the level of raw logical axioms — verify the hardest theorem in his area of research? The result, called the *Liquid Tensor Experiment*, was completed by a global volunteer effort and confirmed correct (Scholze, 2020; Commelin et al., 2023). Scholze said it was the first time he felt genuinely certain the proof was right.
+
+This moment marks something quietly radical. The question is no longer whether computers *can* check mathematics. The question is whether mathematics as a discipline will be *transformed* by the fact that they can.
+
+## What Is a Formal Proof?
+
+To understand what formal proof verification means, we need to be precise about what a proof is at its most fundamental level.
+
+In ordinary mathematical practice, a proof is a sequence of statements, each following from the previous ones by logical inference, starting from known theorems or axioms. When a mathematician writes "it is clear that..." or "by an analogous argument..." they are compressing steps that could, in principle, be expanded. The community accepts this compression because experienced readers can fill the gaps.
+
+A *formal* proof accepts no such compression. Every single inference step must be justified by an explicit logical rule. No step can be skipped, no argument left "to the reader." The proof must be written in a formal language whose grammar is mathematically defined, and a computer program — the *proof assistant* — checks each step mechanically.
+
+The depth of this difference is hard to overstate. A typical research paper proof might compress thousands or tens of thousands of inference steps into a few pages. Andrew Wiles's proof of Fermat's Last Theorem, when informally typeset, runs to roughly 130 pages. Its fully formal counterpart would be orders of magnitude larger.
+
+The question of what formal foundations to build on is itself a profound mathematical problem.
+
+## The Classical Foundation: ZFC Set Theory
+
+For most of the 20th century, the agreed foundation of mathematics was **Zermelo–Fraenkel set theory with the Axiom of Choice**, universally abbreviated ZFC.
+
+ZFC provides eight (or nine, depending on the axiomatization) axioms that define what sets are and how they behave:
+
+$$
+\text{Axiom of Extensionality: } \forall A \, \forall B \, [\forall x \, (x \in A \leftrightarrow x \in B) \Rightarrow A = B]
+$$
+
+$$
+\text{Axiom of Pairing: } \forall a \, \forall b \, \exists C \, \forall x \, [x \in C \leftrightarrow (x = a \lor x = b)]
+$$
+
+These axioms are powerful. From them, you can construct the natural numbers, the integers, the rationals, the reals, and virtually every mathematical object studied in undergraduate and graduate mathematics. The real number $\pi$ is, in ZFC, ultimately a certain equivalence class of Cauchy sequences of rationals, each of which is a set of ordered pairs of natural numbers, each of which is a set of sets of... and so on, all the way down to the empty set $\varnothing$.
+
+This is logically rigorous but practically absurd as a working foundation for proof assistants. If you tried to express the statement "$\sin(\pi/6) = 1/2$" in pure ZFC, you would need to unwind hundreds of layers of set-theoretic definitions before you got to anything a computer could check efficiently.
+
+ZFC is also not without philosophical difficulties. By Gödel's incompleteness theorems (Gödel, 1931), no consistent system powerful enough to express arithmetic can prove its own consistency:
+
+$$
+\text{If } T \supseteq \text{PA is consistent, then } T \nvdash \text{Con}(T)
+$$
+
+This means ZFC cannot prove that ZFC is consistent. We believe it is — because every attempt to derive a contradiction has failed for over a century — but we cannot *prove* it from within the system itself.
+
+Modern proof assistants largely bypass ZFC in favor of an alternative foundation that is far more natural for computers: **type theory**.
+
+![ZFC's infinite tower of nested sets versus CIC's clean tree of typed terms — two radically different visions of mathematical foundations](https://ik.imagekit.io/netrv2whci/mathlumen/article-images/formal-proofs-lean-mathematics/01-zfc-vs-cic.png?updatedAt=1774681685231)
+
+## Type Theory: A Different Kind of Foundation
+
+Type theory was invented by Bertrand Russell in 1908 as a way to avoid the paradoxes of naive set theory. In naive set theory, you can form the set $R = \{x \mid x \notin x\}$ — the set of all sets that do not contain themselves. Does $R$ contain itself? If yes, it shouldn't be in $R$. If no, it should. This is Russell's paradox, and it demolished the foundations Gottlob Frege had spent years building.
+
+Russell's solution was to assign every mathematical object a *type*, and to forbid the formation of expressions where an object is applied to another object of the wrong type. You cannot ask whether a set is a member of itself, because sets and their members live at different levels of the type hierarchy.
+
+Modern type theory has evolved far beyond Russell's original system. The foundation used by Lean (specifically Lean 4) is called the **Calculus of Inductive Constructions (CIC)**, a dependent type theory developed by Thierry Coquand and Gérard Huet in the 1980s (Coquand & Huet, 1988). Understanding CIC requires understanding three ideas in sequence: simple types, dependent types, and the Curry–Howard correspondence.
+
+### Simple Types
+
+In a simply typed system, every expression has a type, written $t : T$, meaning "$t$ is a term of type $T$." We might have:
+
+$$
+3 : \mathbb{N}, \quad \pi : \mathbb{R}, \quad \text{true} : \text{Bool}
+$$
+
+Functions have *function types*. A function taking a natural number and returning a real number has type $\mathbb{N} \to \mathbb{R}$. Type-checking a program (or a proof) means verifying that every term has the type it claims.
+
+### Dependent Types
+
+The crucial innovation of dependent type theory is allowing types to *depend on terms*. This sounds abstract, but the idea is natural.
+
+Consider the type $\text{Vec}(n)$ — the type of vectors with exactly $n$ real entries. This is a type that *depends on the natural number $n$*. The number 5 is a term; $\text{Vec}(5)$ is a type — the type of 5-dimensional vectors. When you write a function that takes a vector of length $n$ and returns a vector of length $2n$, its type is:
+
+$$
+\Pi_{n : \mathbb{N}} \; \text{Vec}(n) \to \text{Vec}(2n)
+$$
+
+This is a *dependent function type* (or $\Pi$-type). The return type $\text{Vec}(2n)$ depends on the input value $n$, not just its type. This lets the type system encode facts about specific values, not just general shapes.
+
+The corresponding notion of *dependent pair type* ($\Sigma$-type) captures pairs where the type of the second component depends on the value of the first:
+
+$$
+\Sigma_{n : \mathbb{N}} \; \text{Vec}(n)
+$$
+
+This is the type of pairs $(n, v)$ where $n$ is a natural number and $v$ is a vector of length exactly $n$. It is also the type-theoretic encoding of the existential statement "there exists a natural number $n$ and a vector of length $n$."
+
+> **Key insight.** In dependent type theory, types are not just labels — they carry mathematical content. The type $\text{Vec}(5)$ does not merely say "this is a vector"; it says "this is a vector of *exactly five* entries." Violations are caught at type-checking time, before any proof is run.
+
+### Why This Changes Everything: The Curry–Howard Correspondence
+
+The deepest idea in type theory, and the reason it provides a foundation for mathematics rather than just programming, is the **Curry–Howard correspondence** (Martin-Löf, 1980): the observation that *propositions are types* and *proofs are terms*.
+
+| Logic | Type Theory |
+|-------|-------------|
+| Proposition $P$ | Type $P$ |
+| Proof of $P$ | Term $p : P$ |
+| $P \wedge Q$ | $P \times Q$ (product type) |
+| $P \vee Q$ | $P + Q$ (sum type) |
+| $P \Rightarrow Q$ | $P \to Q$ (function type) |
+| $\forall x. P(x)$ | $\Pi_{x : A} P(x)$ |
+| $\exists x. P(x)$ | $\Sigma_{x : A} P(x)$ |
+| Falsity $\bot$ | Empty type |
+
+![The Curry–Howard correspondence — logic and type theory as two languages that turn out to be the same language](https://ik.imagekit.io/netrv2whci/mathlumen/article-images/formal-proofs-lean-mathematics/02-curry-howard.png?updatedAt=1774681684795)
+
+To prove that $P \Rightarrow Q$, you must exhibit a *function* of type $P \to Q$ — a term that takes any proof of $P$ as input and produces a proof of $Q$ as output. To prove $\forall x \in \mathbb{N}, P(x)$, you must exhibit a dependent function that, given any natural number $n$, returns a proof of $P(n)$.
+
+This is not a mere analogy. Under the Curry–Howard correspondence, *type-checking is proof-checking*. When Lean verifies that a term has a given type, it is simultaneously verifying that a certain mathematical proof is logically valid. The same computation serves both purposes (de Moura & Ullrich, 2021).
+
+## Lean and Mathlib: The Infrastructure of Formal Mathematics
+
+Lean was created by Leonardo de Moura at Microsoft Research in 2013. Lean 4, a complete rewrite released in 2023, is now the dominant platform for formal mathematics (de Moura & Ullrich, 2021). Its accompanying library, **Mathlib**, is the most ambitious mathematical formalization project in history.
+
+As of early 2026, Mathlib contains over 200,000 formal theorems spanning (Mathlib Community, 2026):
+
+- Abstract algebra (groups, rings, fields, modules, algebras)
+- Number theory (including formal proofs of quadratic reciprocity and Dirichlet's theorem on primes in arithmetic progressions)
+- Topology (metric spaces, topological spaces, continuity, compactness)
+- Measure theory and integration (Lebesgue integral, $L^p$ spaces)
+- Analysis (real and complex analysis, Fourier analysis)
+- Category theory (functors, natural transformations, adjoints, limits)
+- Probability theory
+
+To illustrate how mathematics looks inside Lean, here is a minimal version of the proof that there are infinitely many primes, rendered in Lean 4 syntax:
+
+```lean
+theorem infinitely_many_primes : ∀ n : ℕ, ∃ p, n ≤ p ∧ Nat.Prime p := by
+  intro n
+  obtain ⟨p, hp1, hp2⟩ := Nat.exists_infinite_primes (n + 1)
+  exact ⟨p, Nat.le_of_succ_le hp1, hp2⟩
+```
+
+Reading this line by line: the theorem statement encodes "for every natural number $n$, there exists a prime $p$ with $n \leq p$" — a precise type that the proof term must inhabit.
+
+- `intro n` introduces the universally quantified variable $n$, transforming the goal from $\forall n, \ldots$ to a goal about a specific $n$.
+- `obtain ⟨p, hp1, hp2⟩ := Nat.exists_infinite_primes (n + 1)` calls a Mathlib lemma that already knows primes are unbounded, and destructs its existential output into a witness $p$, a bound proof `hp1`, and a primality proof `hp2`.
+- `exact ⟨p, Nat.le_of_succ_le hp1, hp2⟩` closes the goal by assembling the required witness and both proofs into the dependent pair type the theorem demands.
+
+Lean's kernel independently verifies that each step follows from the previous ones by the rules of CIC. Nothing is assumed; nothing is left implicit.
+
+The kernel itself is small — deliberately so. A key design principle of proof assistants is that the trusted *kernel* (the code whose correctness you must believe for the whole system to work) should be as small as possible. Lean 4's kernel is roughly 6,000 lines of C++. Everything else — tactics, automation, the Mathlib library — is built on top and can be independently verified.
+
+## The Liquid Tensor Experiment
+
+![The Liquid Tensor Experiment — thousands of contributors converging on a single verified theorem at the frontier of mathematics](https://ik.imagekit.io/netrv2whci/mathlumen/article-images/formal-proofs-lean-mathematics/03-liquid-tensor.png?updatedAt=1774681685379)
+
+No event better illustrates both the power and the difficulty of formal verification than the Liquid Tensor Experiment.
+
+In December 2020, Peter Scholze posted a challenge on Kevin Buzzard's blog. Scholze had spent years developing *condensed mathematics* — a new framework for doing geometry over algebraic structures, intended to fix foundational problems with topological algebra. The core technical result was a theorem about a new class of objects he called *liquid real vector spaces*.
+
+Scholze was not confident the proof was correct. The argument was highly intricate, weaving together homological algebra, functional analysis, and novel condensed structures in ways that had never been exposed to serious external scrutiny. He asked: could a community of Lean users formally verify the key theorem, and thereby either confirm or falsify the proof?
+
+The Liquid Tensor Experiment became a landmark volunteer project. Led by Johan Commelin and a rotating team of contributors, it ran from late 2020 through mid-2022 (Commelin et al., 2023). The completed formalization ran to tens of thousands of lines of Lean. It confirmed that the theorem was correct — and in the process, the team had to formalize dozens of supporting results in homological algebra and category theory that did not yet exist in Mathlib, contributing them back to the library.
+
+Scholze's response was notable: he said that going through the formalization process forced a much deeper understanding of why the argument worked, not just that it worked. The computer's insistence on complete explicitness surfaced assumptions and dependencies that the informal proof had left implicit.
+
+This points to something philosophically important. Formal proofs do not just verify — they *clarify*.
+
+## What Formal Verification Reveals About Informal Mathematics
+
+The history of mathematics contains several famous cases where proofs believed to be correct for years — or decades — turned out to have gaps or errors.
+
+In 1879, Alfred Kempe published a proof of the Four Color Theorem. It was accepted for eleven years before Percy Heawood found a gap in 1890. The theorem was not actually proved until 1976, when Appel and Haken used a computer-assisted case analysis.
+
+In 1993, Andrew Wiles submitted his proof of Fermat's Last Theorem. A gap was found during peer review — the Euler system argument was flawed. It took Wiles and Richard Taylor another year to produce a corrected proof.
+
+More recently, Voevodsky — one of the founders of modern homotopy type theory — disclosed that a paper of his from 1990 contained a proof that he later realized was wrong, and that the error had gone undetected for years. This experience was part of what motivated him to take formal verification seriously.
+
+Formal verification cannot happen after the fact for these historical theorems without enormous effort. But as new mathematics is produced, the possibility of routine verification changes the epistemological landscape.
+
+## Homotopy Type Theory: A Deeper Unification
+
+The most mathematically exciting development in foundations over the past decade is **Homotopy Type Theory (HoTT)** (Univalent Foundations Program, 2013), which connects type theory to homotopy theory — the branch of topology that studies spaces up to continuous deformation.
+
+The central insight, due to Voevodsky, is that types behave like topological spaces and equality proofs behave like paths:
+
+- A type $A$ corresponds to a topological space
+- A term $a : A$ corresponds to a point in that space
+- A proof $p : a = b$ of equality between two terms corresponds to a *path* from $a$ to $b$
+- A proof that two proofs $p = q$ are equal corresponds to a *homotopy* between paths
+
+![Homotopy Type Theory — two paths between points a and b on a topological space, connected by a homotopy that represents equality between proofs](https://ik.imagekit.io/netrv2whci/mathlumen/article-images/formal-proofs-lean-mathematics/04-hott-paths.png?updatedAt=1774681684794)
+
+This identification leads to a striking new axiom: the **Univalence Axiom**, which states that equivalent types are equal:
+
+$$
+(A \simeq B) \simeq (A =_{\mathcal{U}} B)
+$$
+
+Here $A \simeq B$ denotes a type equivalence — a bijection between $A$ and $B$ that respects all their structure — and $=_{\mathcal{U}}$ denotes equality in the universe $\mathcal{U}$ of all types. Univalence says these two notions are themselves equivalent.
+
+The univalence axiom is not provable in CIC (it is consistent with it but independent). It requires an extended system. Cubical type theory, implemented in the Agda proof assistant and partially in Lean, provides a computational interpretation of univalence — meaning that proofs using univalence can actually be *run* as programs, not just verified as propositions.
+
+The mathematical consequence of univalence is profound: it makes it *definitionally true* that isomorphic structures are interchangeable. In ordinary mathematics, this is a principle we treat informally ("identify isomorphic groups" — but they're not actually equal, just interchangeable for all purposes). Univalence makes this precise and automatic.
+
+## The Landscape of Proof Assistants
+
+Lean is not the only proof assistant, though it currently dominates for mathematical formalization. The main alternatives are:
+
+**Coq** (now renamed *Rocq*) was developed at INRIA starting in 1984 and is based on CIC — the same type theory underlying Lean. It has a long track record: the formal verification of the Four Color Theorem (Gonthier, 2008) and the odd order theorem in group theory (Gonthier et al., 2013 — a formalization of the 255-page Feit–Thompson proof) were both done in Coq. Its tactic language is different from Lean's, and many mathematicians find Lean's syntax more natural.
+
+**Agda** is a dependently typed language developed at Chalmers University that doubles as both a programming language and a proof assistant. It is the primary platform for research in HoTT and cubical type theory, and its syntax is extremely close to mathematical notation.
+
+**Isabelle/HOL** is based on higher-order logic rather than dependent type theory, making it less expressive in some ways but more automated in others. It has been used for large-scale formal verification in computer science and mathematics, including a verified proof of the prime number theorem.
+
+**Metamath** takes the opposite design philosophy: it uses first-order logic with as simple a kernel as possible (a few hundred lines of code) and requires every proof step to be stated explicitly, with no automation. It hosts several fully formal proofs of major theorems, including the Jordan Curve Theorem.
+
+Each system reflects a different judgment about the tradeoff between *automation* (how much the computer can figure out on its own) and *explicitness* (how certain you can be that the proof is correct).
+
+## The Open Questions
+
+Despite the progress, formal proof verification faces genuine open problems — both technical and philosophical.
+
+**The automation gap.** Current proof assistants require mathematicians to write proofs in a form far more detailed than ordinary mathematical writing. A research mathematician can currently spend weeks or months formalizing a result that took a few days to prove informally. Closing this gap requires advances in *automated reasoning* — tactic synthesis, AI-assisted proof search, and better decision procedures for specific mathematical domains.
+
+Significant progress is underway. Systems like **AlphaProof** (Google DeepMind, 2024) demonstrated that language models can generate Lean proofs for competition-level problems. But research-level mathematics — where the proof strategy itself must be invented — remains out of reach for automation.
+
+**The expressiveness question.** Some areas of mathematics use *informal* reasoning in ways that are difficult to formalize not because of gaps, but because the informal reasoning is genuinely different in character. Computations "up to isomorphism," arguments using infinitesimals, diagrammatic proofs in category theory — these require careful thought about how to encode them in type theory without losing their essence.
+
+**The sociological question.** Mathematicians are not software engineers. The cultural question of whether the mathematical community will adopt formal verification as routine practice — rather than as a specialized tool — is open. Some prominent voices, including Scholze (Scholze, 2020), argue that the effort-to-benefit ratio is currently too unfavorable for most research. Others, including Kevin Buzzard (Buzzard, 2022) and Jeremy Avigad (Avigad, 2024), argue that as tooling improves and Mathlib grows, the marginal cost of formalization will fall dramatically.
+
+## Why This Matters Beyond Mathematics
+
+The implications of formal proof verification extend well beyond pure mathematics.
+
+**Software correctness.** The same technology used to verify mathematical proofs can verify that computer programs behave correctly. Formally verified software has been deployed in safety-critical contexts — avionics, cryptographic protocols, operating system kernels — where errors can be catastrophic. The CompCert project produced a formally verified C compiler (Leroy, 2009); seL4 produced a formally verified operating system microkernel (Klein et al., 2009).
+
+**AI alignment and verification.** As AI systems are increasingly used to make consequential decisions, the question of whether those systems behave correctly — not just empirically, but provably — becomes urgent. Type theory and formal verification provide one possible framework for reasoning about the correctness of AI systems at a rigorous mathematical level.
+
+**The philosophy of mathematical knowledge.** Formal verification forces a confrontation with the question: what is mathematical knowledge? The traditional answer is that mathematics is known through proof, and proof is checked by human experts. Formal verification offers a different answer: proof is checked by a machine, against axioms that are themselves a matter of choice. This raises the question of whether the choice of axioms is itself mathematical or philosophical — whether, for instance, the univalence axiom is *true* or merely *useful*.
+
+Voevodsky, in a lecture shortly before his death in 2017, argued that this question was deeply important (Voevodsky, 2015). The fact that mathematics can be grounded in different axiomatic systems — ZFC, type theory, HoTT — that are mutually consistent but not mutually reducible, suggests that mathematics has a pluralistic character that the 20th century picture of a single ZFC foundation obscures.
+
+## Conclusion: Rigor and Its Discontents
+
+There is something both exciting and unsettling about the formal proof revolution. On one hand, it offers something mathematics has never had: *machine-checkable certainty*. On the other hand, it reframes the activity of mathematics from human insight to verified computation, and it raises the possibility that the informal, intuition-driven practice mathematicians have always valued is not the foundation of mathematical truth, but merely a useful shortcut toward it.
+
+The truth is probably more nuanced. Informal mathematics and formal mathematics are not competing practices but complementary ones. Informal proofs are how mathematical ideas are discovered, communicated, and understood. Formal proofs are how they are verified, at the deepest level, beyond all reasonable doubt.
+
+The analogy to experimental science is instructive. A chemist can have excellent reasons to believe a compound has a certain structure without having run every possible confirming experiment. But the existence of rigorous experimental methods does not make the chemist's informal reasoning worthless — it makes it *accountable*. Formal proof verification is becoming mathematics' version of the reproducible experiment.
+
+What Lean and its successors are building, theorem by theorem and definition by definition, is a fully machine-readable account of what humanity knows in mathematics. When it is complete — in some far future that none of us will see — it will be the most rigorous monument to human knowledge ever constructed.
+
+Whether that is a triumph or a slightly melancholy achievement depends on what you think mathematics is for.
+
+---
+
+## References
+
+1. **The Univalent Foundations Program.** *Homotopy Type Theory: Univalent Foundations of Mathematics.* Institute for Advanced Study, 2013.
+
+2. **Coquand, T. & Huet, G.** "The Calculus of Constructions." *Information and Computation* 76(2–3): 95–120, 1988.
+
+3. **Scholze, P.** "Liquid Tensor Experiment." Blog post, *Xena Project*, December 2020.
+
+4. **Commelin, J. et al.** "Liquid Tensor Experiment: Formal verification of a theorem in condensed mathematics." *Experimental Mathematics* 32(2): 320–329, 2023.
+
+5. **Voevodsky, V.** "An experimental library of formalized mathematics based on the univalent foundations." *Mathematical Structures in Computer Science* 25(5): 1278–1294, 2015.
+
+6. **Buzzard, K.** "What is the point of Lean?" Invited lecture, *International Congress of Mathematicians*, 2022.
+
+7. **Avigad, J.** "Mathematics and the formal turn." *Bulletin of the American Mathematical Society* 61(2): 225–240, 2024.
+
+8. **Gonthier, G.** "Formal proof — the four-color theorem." *Notices of the AMS* 55(11): 1382–1393, 2008.
+
+9. **Gonthier, G. et al.** "A machine-checked proof of the odd order theorem." *Lecture Notes in Computer Science* 7998, 2013.
+
+10. **Klein, G. et al.** "seL4: Formal verification of an OS kernel." *ACM SIGOPS Operating Systems Review* 43(4): 207–220, 2009.
+
+11. **Leroy, X.** "A formally verified compiler back-end." *Journal of Automated Reasoning* 43(4): 363–446, 2009.
+
+12. **Martin-Löf, P.** "Intuitionistic type theory." *Lecture Notes, Universität Padova*, 1980.
+
+13. **de Moura, L. & Ullrich, S.** "The Lean 4 theorem prover and programming language." *Lecture Notes in Computer Science* 12699, 2021.
+
+14. **Gödel, K.** "Über formal unentscheidbare Sätze der Principia Mathematica und verwandter Systeme I." *Monatshefte für Mathematik und Physik* 38: 173–198, 1931.
+
+15. **Mathlib Community.** *The Lean Mathematical Library.* mathlib4 repository, GitHub, 2026. https://github.com/leanprover-community/mathlib4
+
+16. **Google DeepMind.** "AlphaProof and AlphaGeometry 2." Technical blog post, July 2024.
+
+17. **Sloman, L.** "In Math, Rigor Is Vital. But Are Digitized Proofs Taking It Too Far?" *Quanta Magazine*, March 25, 2026.
+
+18. **Cepelewicz, J.** "The Evolving Foundations of Math." *Quanta Magazine*, February 25, 2026.
