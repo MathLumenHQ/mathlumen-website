@@ -62,6 +62,12 @@ export default function RootLayout({
         {/* Preconnect to CDN origins to reduce connection latency */}
         <link rel="preconnect" href="https://ik.imagekit.io" />
         <link rel="dns-prefetch" href="https://ik.imagekit.io" />
+        {/* Prevent flash of wrong theme — runs synchronously before first paint */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('mathlumen-theme');if(t==='light')document.documentElement.classList.add('light');}catch(e){}})();`,
+          }}
+        />
       </head>
       <body className="min-h-screen flex flex-col bg-ink text-paper font-body antialiased">
         {/* Skip to main content — sr-only, visible on focus */}

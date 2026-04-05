@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
+import { createScrollSyncHandlers } from "@/lib/mltex/scroll-sync";
+import { exportToPdf } from "@/lib/mltex/export-pdf";
 
 /* ═══════════════════════════════════════════════════════════════════════
    MATHJAX TYPES
@@ -334,6 +336,23 @@ function ChevronIcon({ className }: { className?: string }) {
   );
 }
 
+function FileDownIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m.75 12l3 3m0 0l3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+    </svg>
+  );
+}
+
+function SpinnerIcon({ className }: { className?: string }) {
+  return (
+    <svg className={cn("animate-spin", className)} fill="none" viewBox="0 0 24 24">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+    </svg>
+  );
+}
+
 function CheckIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -391,6 +410,83 @@ function ToolbarButton({
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
+   SYMBOL GROUPS — for the collapsible Math Toolbar (Feature A)
+   ═══════════════════════════════════════════════════════════════════════ */
+
+interface SymbolItem { display: string; insert: string }
+interface SymbolGroup { label: string; symbols: SymbolItem[] }
+
+const SYMBOL_GROUPS: SymbolGroup[] = [
+  {
+    label: "Greek",
+    symbols: [
+      { display: "α", insert: "\\alpha" },
+      { display: "β", insert: "\\beta" },
+      { display: "γ", insert: "\\gamma" },
+      { display: "δ", insert: "\\delta" },
+      { display: "θ", insert: "\\theta" },
+      { display: "λ", insert: "\\lambda" },
+      { display: "μ", insert: "\\mu" },
+      { display: "π", insert: "\\pi" },
+      { display: "σ", insert: "\\sigma" },
+      { display: "φ", insert: "\\phi" },
+      { display: "ψ", insert: "\\psi" },
+      { display: "ω", insert: "\\omega" },
+      { display: "Σ", insert: "\\Sigma" },
+      { display: "Δ", insert: "\\Delta" },
+      { display: "Ω", insert: "\\Omega" },
+    ],
+  },
+  {
+    label: "Ops",
+    symbols: [
+      { display: "∫", insert: "\\int_{}^{}" },
+      { display: "∬", insert: "\\iint" },
+      { display: "∑", insert: "\\sum_{n=0}^{\\infty}" },
+      { display: "∏", insert: "\\prod_{}^{}" },
+      { display: "√", insert: "\\sqrt{}" },
+      { display: "∂", insert: "\\partial" },
+      { display: "∇", insert: "\\nabla" },
+      { display: "lim", insert: "\\lim_{x \\to \\infty}" },
+      { display: "→", insert: "\\to" },
+      { display: "⇒", insert: "\\Rightarrow" },
+      { display: "∞", insert: "\\infty" },
+    ],
+  },
+  {
+    label: "Struct",
+    symbols: [
+      { display: "frac", insert: "\\frac{}{}" },
+      { display: "^{}", insert: "^{}" },
+      { display: "_{}", insert: "_{}" },
+      { display: "\\mathbf", insert: "\\mathbf{}" },
+      { display: "\\mathcal", insert: "\\mathcal{}" },
+      { display: "\\mathbb", insert: "\\mathbb{R}" },
+      { display: "align", insert: "\\begin{aligned}\n  \n\\end{aligned}" },
+      { display: "cases", insert: "\\begin{cases}\n  \n\\end{cases}" },
+      { display: "matrix", insert: "\\begin{bmatrix} a & b \\\\ c & d \\end{bmatrix}" },
+      { display: "pmatrix", insert: "\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}" },
+    ],
+  },
+  {
+    label: "Common",
+    symbols: [
+      { display: "$$ block", insert: "$$\n\n$$" },
+      { display: "$ inline", insert: "$ $" },
+      { display: "≤", insert: "\\leq" },
+      { display: "≥", insert: "\\geq" },
+      { display: "≠", insert: "\\neq" },
+      { display: "≈", insert: "\\approx" },
+      { display: "∈", insert: "\\in" },
+      { display: "∉", insert: "\\notin" },
+      { display: "⊂", insert: "\\subset" },
+      { display: "∩", insert: "\\cap" },
+      { display: "∪", insert: "\\cup" },
+    ],
+  },
+];
+
+/* ═══════════════════════════════════════════════════════════════════════
    MAIN EDITOR COMPONENT
    ═══════════════════════════════════════════════════════════════════════ */
 
@@ -407,6 +503,25 @@ export function MltexEditor() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const splitRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
+
+  // Feature A — Symbol bar
+  const [showSymbols, setShowSymbols] = useState(false);
+
+  // Feature 1 — Scroll sync
+  const [syncEnabled, setSyncEnabled] = useState(false);
+
+  // Feature 2 — PDF export
+  const [exportState, setExportState] = useState<"idle" | "exporting" | "error">("idle");
+
+  // Feature B — Search & Replace
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [replaceTerm, setReplaceTerm] = useState("");
+  const [matchCount, setMatchCount] = useState(0);
+
+  // Feature C — IndexedDB save status
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const lastSaveRef = useRef<number>(0);
 
   const isDark = theme === "dark";
 
@@ -526,6 +641,34 @@ export function MltexEditor() {
   const toggleFullscreen = useCallback(() => setFullscreen((p) => !p), []);
   const toggleTheme = useCallback(() => setTheme((p) => (p === "dark" ? "light" : "dark")), []);
 
+  /* ─── Feature A: insert snippet at cursor ───────────────────────────── */
+
+  const insertAtCursor = useCallback((snippet: string) => {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const newContent = content.slice(0, start) + snippet + content.slice(end);
+    setContent(newContent);
+    requestAnimationFrame(() => {
+      ta.focus();
+      ta.selectionStart = start + snippet.length;
+      ta.selectionEnd = start + snippet.length;
+    });
+  }, [content]);
+
+  /* ─── Feature B: replace handlers ───────────────────────────────────── */
+
+  const handleReplaceFirst = useCallback(() => {
+    if (!searchTerm) return;
+    setContent(content.replace(searchTerm, replaceTerm));
+  }, [content, searchTerm, replaceTerm]);
+
+  const handleReplaceAll = useCallback(() => {
+    if (!searchTerm) return;
+    setContent(content.replaceAll(searchTerm, replaceTerm));
+  }, [content, searchTerm, replaceTerm]);
+
   /* ─── Tab key ───────────────────────────────────────────────────────── */
 
   const handleKeyDown = useCallback(
@@ -557,16 +700,164 @@ export function MltexEditor() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, [showTemplates]);
 
-  /* ─── Escape to exit fullscreen ─────────────────────────────────────── */
+  /* ─── Global keyboard shortcuts (Escape + Ctrl/Cmd+H) ───────────────── */
 
   useEffect(() => {
-    if (!fullscreen) return;
-    function handleEscape(e: KeyboardEvent) {
-      if (e.key === "Escape") setFullscreen(false);
+    function handleGlobalKey(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        if (showSearch) { setShowSearch(false); return; }
+        if (fullscreen) setFullscreen(false);
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === "h") {
+        e.preventDefault();
+        setShowSearch((p) => !p);
+      }
     }
-    document.addEventListener("keydown", handleEscape);
-    return () => document.removeEventListener("keydown", handleEscape);
-  }, [fullscreen]);
+    document.addEventListener("keydown", handleGlobalKey);
+    return () => document.removeEventListener("keydown", handleGlobalKey);
+  }, [fullscreen, showSearch]);
+
+  /* ─── Feature B: match count ─────────────────────────────────────────── */
+
+  useEffect(() => {
+    if (!searchTerm) { setMatchCount(0); return; }
+    setMatchCount(content.split(searchTerm).length - 1);
+  }, [searchTerm, content]);
+
+  /* ─── Feature C: IndexedDB helpers ──────────────────────────────────── */
+
+  const DB_NAME = "MLTeXDB";
+  const STORE = "documents";
+  const DOC_KEY = "mltex_v1";
+
+  const openDB = (): Promise<IDBDatabase> =>
+    new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, 1);
+      req.onupgradeneeded = (e) => {
+        const db = (e.target as IDBOpenDBRequest).result;
+        if (!db.objectStoreNames.contains(STORE))
+          db.createObjectStore(STORE);
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+
+  const saveDoc = useCallback(async (text: string) => {
+    try {
+      setSaveStatus("saving");
+      const db = await openDB();
+      await new Promise<void>((resolve, reject) => {
+        const tx = db.transaction(STORE, "readwrite");
+        tx.objectStore(STORE).put(text, DOC_KEY);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+      lastSaveRef.current = Date.now();
+      setSaveStatus("saved");
+    } catch {
+      setSaveStatus("error");
+    }
+  }, []);
+
+  const loadDoc = useCallback(async (): Promise<string | null> => {
+    try {
+      const db = await openDB();
+      return new Promise((resolve) => {
+        const req = db
+          .transaction(STORE, "readonly")
+          .objectStore(STORE)
+          .get(DOC_KEY);
+        req.onsuccess = () => resolve((req.result as string | undefined) ?? null);
+        req.onerror = () => resolve(null);
+      });
+    } catch {
+      return null;
+    }
+  }, []);
+
+  /* ─── Feature C: load on mount ───────────────────────────────────────── */
+
+  useEffect(() => {
+    loadDoc().then((saved) => {
+      if (saved !== null) setContent(saved);
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /* ─── Feature C: debounced auto-save (1500ms) ────────────────────────── */
+
+  useEffect(() => {
+    const timer = setTimeout(() => saveDoc(content), 1500);
+    return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [content]);
+
+  /* ─── Feature C: interval auto-save backup (5s) ─────────────────────── */
+
+  useEffect(() => {
+    const interval = setInterval(() => saveDoc(content), 5000);
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [content]);
+
+  /* ─── Feature 1: load scroll sync preference from localStorage ───────── */
+
+  useEffect(() => {
+    try {
+      if (localStorage.getItem("mathlumen-mltex-sync-scroll") === "true") {
+        setSyncEnabled(true);
+      }
+    } catch {}
+  }, []);
+
+  /* ─── Feature 1: scroll sync listeners ──────────────────────────────── */
+
+  useEffect(() => {
+    if (!syncEnabled) return;
+    const write = textareaRef.current;
+    const preview = previewRef.current;
+    if (!write || !preview) return;
+
+    const { syncFromWrite, syncFromPreview } = createScrollSyncHandlers({
+      writeRef: textareaRef as React.RefObject<HTMLElement>,
+      previewRef: previewRef as React.RefObject<HTMLElement>,
+    });
+
+    write.addEventListener("scroll", syncFromWrite, { passive: true });
+    preview.addEventListener("scroll", syncFromPreview, { passive: true });
+
+    return () => {
+      write.removeEventListener("scroll", syncFromWrite);
+      preview.removeEventListener("scroll", syncFromPreview);
+    };
+  }, [syncEnabled]);
+
+  /* ─── Feature 1: toggle sync + persist ──────────────────────────────── */
+
+  const toggleSync = useCallback(() => {
+    setSyncEnabled((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("mathlumen-mltex-sync-scroll", String(next));
+      } catch {}
+      return next;
+    });
+  }, []);
+
+  /* ─── Feature 2: export PDF ──────────────────────────────────────────── */
+
+  const handleExportPdf = useCallback(async () => {
+    if (!previewRef.current || exportState === "exporting") return;
+    setExportState("exporting");
+    try {
+      const timestamp = new Date().toISOString().slice(0, 10);
+      await exportToPdf(previewRef.current, `mltex-export-${timestamp}`);
+      setExportState("idle");
+    } catch {
+      setExportState("error");
+      setTimeout(() => setExportState("idle"), 3000);
+    }
+  }, [exportState]);
 
   /* ─── Theme tokens ──────────────────────────────────────────────────── */
 
@@ -656,6 +947,31 @@ export function MltexEditor() {
             <TrashIcon className="w-3.5 h-3.5" /><span className="hidden sm:inline">Clear</span>
           </ToolbarButton>
 
+          <div className={cn("h-4 w-px mx-0.5", isDark ? "bg-gold/20" : "bg-[#ddd8ce]")} />
+
+          <ToolbarButton
+            onClick={toggleSync}
+            title={syncEnabled ? "Disable scroll sync" : "Enable scroll sync"}
+            isDark={isDark}
+          >
+            <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", syncEnabled ? "bg-green-500" : isDark ? "bg-gold/30" : "bg-[#ccc5b8]")} />
+            <span className="hidden sm:inline">Sync</span>
+          </ToolbarButton>
+
+          <ToolbarButton
+            onClick={handleExportPdf}
+            title="Export to PDF"
+            isDark={isDark}
+          >
+            {exportState === "exporting" ? (
+              <><SpinnerIcon className="w-3.5 h-3.5" /><span className="hidden sm:inline">Generating...</span></>
+            ) : exportState === "error" ? (
+              <><FileDownIcon className="w-3.5 h-3.5 text-red-400" /><span className="hidden sm:inline text-red-400">Failed</span></>
+            ) : (
+              <><FileDownIcon className="w-3.5 h-3.5" /><span className="hidden sm:inline">Export PDF</span></>
+            )}
+          </ToolbarButton>
+
           <ToolbarButton onClick={toggleFullscreen} title={fullscreen ? "Exit (Esc)" : "Fullscreen"} isDark={isDark}>
             {fullscreen ? (
               <><ShrinkIcon className="w-3.5 h-3.5" /><span className="hidden sm:inline">Exit</span></>
@@ -663,8 +979,50 @@ export function MltexEditor() {
               <><ExpandIcon className="w-3.5 h-3.5" /><span className="hidden sm:inline">Expand</span></>
             )}
           </ToolbarButton>
+
+          <div className={cn("h-4 w-px mx-0.5", isDark ? "bg-gold/20" : "bg-[#ddd8ce]")} />
+
+          <ToolbarButton onClick={() => setShowSymbols((p) => !p)} title="Toggle symbol bar" isDark={isDark}>
+            <span>Symbols</span>
+            <ChevronIcon className={cn("w-3 h-3 transition-transform duration-200", showSymbols && "rotate-180")} />
+          </ToolbarButton>
         </div>
       </div>
+
+      {/* ── Symbol bar (Feature A) ───────────────────────────────────── */}
+      {showSymbols && (
+        <div className={cn(
+          "flex items-center gap-1 px-3 py-1.5 overflow-x-auto border-b shrink-0 flex-wrap",
+          chromeBg, chromeBorder
+        )}>
+          {SYMBOL_GROUPS.map((group, gi) => (
+            <div key={group.label} className="flex items-center gap-1 shrink-0">
+              {gi > 0 && (
+                <div className={cn("h-4 w-px mx-1 shrink-0", isDark ? "bg-gold/20" : "bg-[#ddd8ce]")} />
+              )}
+              <span className="text-[10px] uppercase tracking-wider opacity-40 mr-1 font-mono shrink-0">
+                {group.label}
+              </span>
+              {group.symbols.map((sym) => (
+                <button
+                  key={sym.display}
+                  type="button"
+                  title={sym.insert}
+                  onClick={() => insertAtCursor(sym.insert)}
+                  className={cn(
+                    "h-6 px-1.5 text-xs font-mono border transition-colors duration-150 shrink-0",
+                    isDark
+                      ? "text-muted hover:text-paper border-gold/10 hover:border-gold/30 bg-ink hover:bg-gold/[0.03]"
+                      : "text-[#6b6560] hover:text-[#1a1a2e] border-[#ddd8ce] hover:border-gold/40 bg-white hover:bg-[#f5f3ee]"
+                  )}
+                >
+                  {sym.display}
+                </button>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* ── Split pane ───────────────────────────────────────────────── */}
       <div
@@ -673,10 +1031,93 @@ export function MltexEditor() {
         style={{ "--split-pos": `${splitPos}%` } as React.CSSProperties}
       >
         {/* Editor pane */}
-        <div className={cn("mltex-editor-pane flex-1 flex flex-col min-h-0 min-w-0")}>
+        <div className={cn("mltex-editor-pane flex-1 flex flex-col min-h-0 min-w-0 relative")}>
           <div className={cn("px-4 py-1.5 text-[11px] font-mono border-b shrink-0 uppercase tracking-wider", chromeBg, chromeText, labelBorder)}>
             Editor
           </div>
+
+          {/* Feature B — Search & Replace panel */}
+          {showSearch && (
+            <div className={cn(
+              "absolute top-2 right-2 z-50 w-72 p-3 border shadow-2xl",
+              isDark
+                ? "bg-ink-2 border-gold/20 text-paper"
+                : "bg-white border-[#ddd8ce] text-[#1e1e2e]"
+            )}>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-mono uppercase tracking-wider opacity-60">
+                  Search &amp; Replace
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowSearch(false)}
+                  className="opacity-40 hover:opacity-100 text-sm leading-none"
+                >
+                  ✕
+                </button>
+              </div>
+              <input
+                type="text"
+                placeholder="Search..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className={cn(
+                  "w-full px-2 py-1.5 text-xs font-mono border mb-1.5 focus:outline-none",
+                  isDark
+                    ? "bg-ink border-gold/20 text-paper placeholder:text-muted/40"
+                    : "bg-[#f5f3ee] border-[#ddd8ce] text-[#1e1e2e] placeholder:text-[#bbb5a8]"
+                )}
+              />
+              <input
+                type="text"
+                placeholder="Replace with..."
+                value={replaceTerm}
+                onChange={(e) => setReplaceTerm(e.target.value)}
+                className={cn(
+                  "w-full px-2 py-1.5 text-xs font-mono border mb-2 focus:outline-none",
+                  isDark
+                    ? "bg-ink border-gold/20 text-paper placeholder:text-muted/40"
+                    : "bg-[#f5f3ee] border-[#ddd8ce] text-[#1e1e2e] placeholder:text-[#bbb5a8]"
+                )}
+              />
+              <div className="text-[10px] font-mono opacity-50 mb-2">
+                {searchTerm
+                  ? matchCount === 0
+                    ? "No matches"
+                    : `${matchCount} match${matchCount === 1 ? "" : "es"}`
+                  : "Type to search"}
+              </div>
+              <div className="flex gap-1.5">
+                <button
+                  type="button"
+                  onClick={handleReplaceFirst}
+                  disabled={!searchTerm || matchCount === 0}
+                  className={cn(
+                    "flex-1 py-1 text-xs font-mono border transition-colors",
+                    isDark
+                      ? "border-gold/20 hover:border-gold/40 hover:bg-gold/5 disabled:opacity-30"
+                      : "border-[#ddd8ce] hover:border-gold/40 hover:bg-[#f5f3ee] disabled:opacity-30"
+                  )}
+                >
+                  Replace
+                </button>
+                <button
+                  type="button"
+                  onClick={handleReplaceAll}
+                  disabled={!searchTerm || matchCount === 0}
+                  className={cn(
+                    "flex-1 py-1 text-xs font-mono border transition-colors",
+                    isDark
+                      ? "border-gold/20 hover:border-gold/40 hover:bg-gold/5 disabled:opacity-30"
+                      : "border-[#ddd8ce] hover:border-gold/40 hover:bg-[#f5f3ee] disabled:opacity-30"
+                  )}
+                >
+                  Replace All
+                </button>
+              </div>
+            </div>
+          )}
+
           <textarea
             ref={textareaRef}
             value={content}
@@ -731,17 +1172,40 @@ export function MltexEditor() {
 
       {/* ── Status bar ───────────────────────────────────────────────── */}
       <div className={cn("px-4 py-1.5 text-[11px] font-mono border-t shrink-0 flex items-center justify-between gap-4", chromeBg, chromeBorder, isDark ? "text-muted/50" : "text-[#a09a90]")}>
-        <span className="truncate">
+        {/* Left: save status */}
+        <span className="flex items-center gap-3 shrink-0">
+          {saveStatus === "saving" && (
+            <span className="flex items-center gap-1.5 shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse" />
+              <span>Saving...</span>
+            </span>
+          )}
+          {saveStatus === "saved" && (
+            <span className="flex items-center gap-1.5 shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+              <span>Saved locally</span>
+            </span>
+          )}
+          {saveStatus === "error" && (
+            <span className="flex items-center gap-1.5 shrink-0 text-red-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+              <span>Save failed</span>
+            </span>
+          )}
+          {saveStatus === "idle" && (
+            <span className="opacity-40">Your data never leaves this browser</span>
+          )}
+        </span>
+
+        {/* Center: editor hints */}
+        <span className="truncate hidden sm:block text-center">
           <span className="text-gold/40">$...$</span> inline
           <span className={cn("mx-2", isDark ? "text-gold/20" : "text-[#ddd8ce]")}>&middot;</span>
           <span className="text-gold/40">$$...$$</span> display
-          <span className={cn("mx-2 hidden sm:inline", isDark ? "text-gold/20" : "text-[#ddd8ce]")}>&middot;</span>
-          <span className="hidden sm:inline text-gold/40">## </span>
-          <span className="hidden sm:inline">headings</span>
-          <span className={cn("mx-2 hidden sm:inline", isDark ? "text-gold/20" : "text-[#ddd8ce]")}>&middot;</span>
-          <span className="hidden sm:inline">
-            <kbd className={cn("px-1 py-px border text-[10px]", isDark ? "border-gold/10" : "border-[#ddd8ce]")}>Tab</kbd> indent
-          </span>
+          <span className={cn("mx-2", isDark ? "text-gold/20" : "text-[#ddd8ce]")}>&middot;</span>
+          <span className="text-gold/40">## </span>headings
+          <span className={cn("mx-2", isDark ? "text-gold/20" : "text-[#ddd8ce]")}>&middot;</span>
+          <kbd className={cn("px-1 py-px border text-[10px]", isDark ? "border-gold/10" : "border-[#ddd8ce]")}>Tab</kbd> indent
           {fullscreen && (
             <>
               <span className={cn("mx-2", isDark ? "text-gold/20" : "text-[#ddd8ce]")}>&middot;</span>
@@ -749,6 +1213,8 @@ export function MltexEditor() {
             </>
           )}
         </span>
+
+        {/* Right: char count */}
         <span className="shrink-0 tabular-nums">{content.length} chars</span>
       </div>
     </div>

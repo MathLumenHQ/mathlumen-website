@@ -8,6 +8,7 @@ import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/brand/Logo";
 import { NAV_CATEGORY_LINKS, NAV_LINKS } from "@/lib/constants";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 /**
  * Fixed top navigation bar.
@@ -82,6 +83,8 @@ export function Navigation() {
 
           {/* Desktop right side */}
           <div className="hidden lg:flex items-center gap-4">
+            <ThemeToggle />
+
             {/* Cmd+K search hint */}
             <button
               type="button"
@@ -168,24 +171,27 @@ export function Navigation() {
                 {/* Close button */}
                 <div className="flex items-center justify-between px-6 h-16 border-b border-gold/[0.18]">
                   <Logo size="sm" />
-                  <Dialog.Close asChild>
-                    <button
-                      type="button"
-                      className="text-paper/60 hover:text-paper p-1 transition-colors duration-200"
-                      aria-label="Close navigation menu"
-                    >
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={1.5}
-                        aria-hidden="true"
+                  <div className="flex items-center gap-1">
+                    <ThemeToggle />
+                    <Dialog.Close asChild>
+                      <button
+                        type="button"
+                        className="text-paper/60 hover:text-paper p-1 transition-colors duration-200"
+                        aria-label="Close navigation menu"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </Dialog.Close>
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={1.5}
+                          aria-hidden="true"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </Dialog.Close>
+                  </div>
                 </div>
 
                 {/* Links */}

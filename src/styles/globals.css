@@ -19,6 +19,66 @@
   --radius-lg: 8px;
 }
 
+/* ─── Light Theme Tokens ─────────────────────────────────────────────── */
+
+.light {
+  /* Page and surface backgrounds */
+  --color-ink: #F5F3EF;
+  --color-ink-2: #EDEAE4;
+
+  /* Text — deeper than the initial spec to hit WCAG AA on warm parchment */
+  --color-paper: #0D0D0D;
+  --color-muted: #6B6764;
+
+  /*
+   * In dark mode gold-light (#e8d08a) is readable on near-black.
+   * On parchment it has poor contrast, so map it to the darker gold.
+   */
+  --color-gold-light: #8a6820;
+}
+
+/*
+ * Nav and footer stay dark in light mode.
+ * Re-scope all color tokens back to their original dark values so that
+ * every Tailwind utility and direct var() reference inside these elements
+ * renders exactly as it does in dark mode.
+ */
+.light nav,
+.light footer {
+  --color-ink: #06080f;
+  --color-ink-2: #0d1018;
+  --color-paper: #f5f0e8;
+  --color-muted: #6b6560;
+  --color-gold-light: #e8d08a;
+}
+
+/*
+ * Problem: at scroll = 0 the nav has `bg-transparent`, so the parchment
+ * page background shows through. Because nav tokens are scoped to dark
+ * values, this produces invisible white text on a white background.
+ * On scroll, `bg-ink/80` snaps in — a jarring dark flash.
+ *
+ * Fix: in light mode, the nav always carries a dark frosted background,
+ * identical at every scroll depth. No transition, no flash.
+ *
+ * Specificity of `html.light nav.no-print` = (0, 2, 2) which beats any
+ * single Tailwind utility class (0, 1, 0) — no !important needed.
+ */
+html.light nav.no-print {
+  background-color: rgba(6, 8, 15, 0.92);
+  border-bottom-color: rgba(201, 168, 76, 0.16);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/*
+ * Soften the hard cut between the light content body and the dark footer.
+ * A faint upward shadow reads as a natural depth boundary.
+ */
+html.light footer {
+  box-shadow: 0 -6px 32px rgba(6, 8, 15, 0.10);
+}
+
 /* ─── Base Reset ─────────────────────────────────────────────────────── */
 
 *,
@@ -46,6 +106,8 @@ body {
   line-height: 1.7;
   /* Belt-and-suspenders overflow guard */
   overflow-x: hidden;
+  /* Smooth theme transitions */
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 ::selection {
@@ -239,14 +301,63 @@ body {
   color: var(--color-gold-light);
 }
 
+/*
+ * Tailwind preflight sets list-style: none on every ul/ol globally.
+ * Explicitly restore list-style-type here so markers appear inside .prose.
+ * padding-left creates the gutter that list-style-position:outside (default)
+ * places the marker into.
+ */
 .prose ul,
 .prose ol {
   margin: 1.5rem 0;
-  padding-left: 1.5rem;
+  padding-left: 1.75rem;
+}
+
+.prose ul {
+  list-style-type: disc;
+}
+
+.prose ol {
+  list-style-type: decimal;
+}
+
+/* Second-level nesting */
+.prose ul ul,
+.prose ol ul {
+  list-style-type: circle;
+  margin: 0.5rem 0;
+}
+
+.prose ol ol,
+.prose ul ol {
+  list-style-type: lower-alpha;
+  margin: 0.5rem 0;
+}
+
+/* Third-level nesting */
+.prose ul ul ul,
+.prose ol ul ul,
+.prose ol ol ul {
+  list-style-type: square;
+  margin: 0.25rem 0;
+}
+
+.prose ol ol ol,
+.prose ul ol ol {
+  list-style-type: lower-roman;
+  margin: 0.25rem 0;
 }
 
 .prose li {
   margin-bottom: 0.5rem;
+  line-height: 1.8;
+}
+
+/* Tighten spacing for nested li so the nesting reads as a unit */
+.prose li > ul,
+.prose li > ol {
+  margin-top: 0.35rem;
+  margin-bottom: 0.35rem;
 }
 
 .prose li::marker {
@@ -544,4 +655,150 @@ body {
 
 .pillar-card:hover::before {
   transform: scaleY(1);
+}
+
+/* ─── Light Mode Page Background ─────────────────────────────────────── */
+
+/*
+ * Dark mode body: solid near-black (#06080f). UI elements create contrast
+ * against it, so it reads as having depth even though it's flat.
+ *
+ * Light mode body: without intervention, solid parchment (#F5F3EF) — flat,
+ * no depth, feels like a blank app screen rather than a publication.
+ *
+ * Three layers are stacked on the body background-image:
+ *
+ *  1. Paper grain  — SVG feTurbulence, tiling 128 × 128 px, scrolls with
+ *                    content. Adds tactile, paper-like texture at 3% opacity.
+ *                    Same technique as the existing .noise-overlay; opacity is
+ *                    baked into the SVG rect so no extra CSS property is needed.
+ *
+ *  2. Amber haze   — radial-gradient, top-left quadrant. Evokes soft lamplight
+ *                    from the upper-left corner — a classical editorial device.
+ *                    Fixed to viewport so the glow stays consistent while
+ *                    the reader scrolls through long articles.
+ *
+ *  3. Sepia depth  — radial-gradient, bottom-right quadrant. Grounds the
+ *                    composition; prevents the corners from looking blank.
+ *                    Also fixed, acting as a permanent environmental shadow.
+ *
+ * background-attachment: fixed on the two gradients means they render
+ * relative to the viewport — the ambient lighting does not scroll. On iOS
+ * Safari, fixed attachment falls back to scroll, which is visually acceptable
+ * (the gradient shifts slightly) and never harms readability.
+ *
+ * background-color: var(--color-ink) (#F5F3EF in light mode) remains as the
+ * base layer below all background-image layers. The gradients use transparent
+ * outer stops so the base parchment shows through outside the glow zones.
+ */
+.light body {
+  background-image:
+    /* Paper grain — tactile, scholarly */
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)' opacity='0.03'/%3E%3C/svg%3E"),
+    /* Warm amber haze — top-left, lamplight quality */
+    radial-gradient(
+      ellipse 80% 60% at 15% 15%,
+      rgba(180, 140, 80, 0.09) 0%,
+      transparent 65%
+    ),
+    /* Sepia anchor — bottom-right, compositional grounding */
+    radial-gradient(
+      ellipse 70% 50% at 85% 85%,
+      rgba(120, 100, 60, 0.07) 0%,
+      transparent 55%
+    );
+  background-repeat:     repeat,      no-repeat, no-repeat;
+  background-size:       128px 128px, 100% 100%, 100% 100%;
+  background-attachment: scroll,      fixed,     fixed;
+}
+
+/*
+ * Math grid: the dark mode uses gold at 4% opacity, which reads clearly
+ * against near-black. On warm parchment, 4% gold has roughly half the
+ * perceptual contrast — raise it to 7% so the grid remains legible without
+ * becoming heavy or interfering with the content above it.
+ */
+html.light .math-grid {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--color-gold) 7%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--color-gold) 7%, transparent) 1px, transparent 1px);
+}
+
+/* ─── Light Theme Overrides ──────────────────────────────────────────── */
+
+/*
+ * Code blocks: keep the dark "island" pattern in light mode.
+ * rehype-pretty-code injects inline token colours from github-dark, so the
+ * pre background must stay dark to remain readable.
+ */
+.light .prose pre {
+  background-color: #1e1e2e;
+}
+
+/* Blockquote: add a warm background tint and darken the italic text */
+.light .prose blockquote {
+  background-color: #EAE7E0;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
+/* KaTeX equations: force equation text to follow the theme foreground */
+.light .katex {
+  color: var(--color-paper);
+}
+
+/* Scrollbar track in light mode */
+.light ::-webkit-scrollbar-track {
+  background: var(--color-ink-2);
+}
+
+/* ─── Problem of the Week Pill CTA ──────────────────────────────────── */
+
+/*
+ * Accent pill — visually secondary to the primary gold CTA.
+ * Uses indigo tones in dark mode (distinct from gold) and warm amber
+ * tones in light mode (consistent with the parchment palette).
+ */
+.potw-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  background: rgba(99, 102, 241, 0.12);
+  color: #a5b4fc;
+  text-decoration: none;
+  transition: background 200ms ease, border-color 200ms ease;
+  white-space: nowrap;
+}
+
+.potw-btn:hover {
+  background: rgba(99, 102, 241, 0.20);
+  border-color: rgba(99, 102, 241, 0.5);
+}
+
+.potw-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: #818cf8;
+  flex-shrink: 0;
+}
+
+.light .potw-btn {
+  border-color: rgba(180, 140, 80, 0.35);
+  background: rgba(180, 140, 80, 0.10);
+  color: #92700a;
+}
+
+.light .potw-btn:hover {
+  background: rgba(180, 140, 80, 0.18);
+  border-color: rgba(180, 140, 80, 0.5);
+}
+
+.light .potw-dot {
+  background: #b45309;
 }

@@ -11,6 +11,7 @@ import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/Button";
 import { Separator } from "@/components/ui/Separator";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { ProblemOfTheWeek } from "@/components/ProblemOfTheWeek";
 import type { Category } from "@/schema/types";
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -143,7 +144,7 @@ export default function HomePage() {
               </p>
 
               {/* CTAs */}
-              <div className="fade-up fade-up-delay-4 flex flex-wrap gap-4">
+              <div className="fade-up fade-up-delay-4 flex flex-wrap gap-4 items-center">
                 <Link href="/articles">
                   <Button variant="gold" size="lg">
                     Start Reading
@@ -153,6 +154,10 @@ export default function HomePage() {
                   <Button variant="ghost" size="lg">
                     Latest Research
                   </Button>
+                </Link>
+                <Link href="/problem-of-the-week" className="potw-btn">
+                  <span className="potw-dot animate-pulse" aria-hidden="true" />
+                  Problem of the Week →
                 </Link>
               </div>
             </div>
@@ -255,6 +260,11 @@ export default function HomePage() {
       {/* ── Section 3b: LATEST NEWS ──────────────────────────────────── */}
       <Suspense fallback={null}>
         <LatestNewsSection />
+      </Suspense>
+
+      {/* ── Section 3c: PROBLEM OF THE WEEK ─────────────────────────── */}
+      <Suspense fallback={<ProblemOfTheWeekSkeleton />}>
+        <ProblemOfTheWeek />
       </Suspense>
 
       {/* ── Section 4: LATEST BY CATEGORY ───────────────────────────── */}
@@ -580,6 +590,29 @@ function GridSkeleton({ count }: { count: number }) {
           <Skeleton className="h-3 w-1/2" />
         </div>
       ))}
+    </div>
+  );
+}
+
+function ProblemOfTheWeekSkeleton() {
+  return (
+    <div className="bg-ink-2 border-y border-gold/[0.18]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="mb-8 space-y-2">
+          <Skeleton className="h-3 w-36" />
+          <Skeleton className="h-8 w-48" />
+        </div>
+        <div className="border border-gold/[0.18] p-8 mb-6 space-y-3">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-5/6" />
+          <Skeleton className="h-12 w-3/4 mx-auto" />
+          <Skeleton className="h-4 w-full" />
+        </div>
+        <div className="flex justify-between items-center">
+          <Skeleton className="h-4 w-40" />
+          <Skeleton className="h-10 w-48" />
+        </div>
+      </div>
     </div>
   );
 }
