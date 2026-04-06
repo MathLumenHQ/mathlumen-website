@@ -1,7 +1,5 @@
 import { Suspense } from "react";
 import Link from "next/link";
-
-export const revalidate = 3600;
 import { getArticles } from "@/lib/queries/articles";
 import { ArticleCard } from "@/components/article/ArticleCard";
 import { CategoryFilter } from "@/components/article/CategoryFilter";
@@ -13,6 +11,10 @@ import { Separator } from "@/components/ui/Separator";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { ProblemOfTheWeek } from "@/components/ProblemOfTheWeek";
 import type { Category } from "@/schema/types";
+
+// Revalidate the homepage at most once per hour.
+// Next.js 16 ISR: when the timer fires with a stale value, it is clamped to 1ms internally.
+export const revalidate = 3600;
 
 /* ═══════════════════════════════════════════════════════════════════════
    CONTENT PILLARS DATA
@@ -104,7 +106,7 @@ export default function HomePage() {
       />
 
       {/* ── Section 1: HERO ─────────────────────────────────────────── */}
-      <section className="relative min-h-[calc(100vh-4rem)] flex items-center overflow-hidden">
+      <section className="relative min-h-[85svh] sm:min-h-[calc(100vh-4rem)] flex items-center overflow-hidden">
         {/* Background: radial gradient + math grid + noise */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--color-ink)_0%,_var(--color-ink-2)_100%)]" />
         <div className="absolute inset-0 math-grid" />
@@ -124,10 +126,10 @@ export default function HomePage() {
 
               {/* H1 */}
               <h1 className="fade-up fade-up-delay-1 mb-6">
-                <span className="block font-display font-black text-[2.5rem] sm:text-5xl lg:text-[4rem] text-paper leading-[1.08]">
+                <span className="block font-display font-black text-[1.875rem] sm:text-5xl lg:text-[4rem] text-paper leading-[1.08]">
                   Illuminating
                 </span>
-                <span className="block font-display font-black text-[2.5rem] sm:text-5xl lg:text-[4rem] italic text-gold leading-[1.08]">
+                <span className="block font-display font-black text-[1.875rem] sm:text-5xl lg:text-[4rem] italic text-gold leading-[1.08]">
                   Mathematics
                 </span>
               </h1>
@@ -205,9 +207,9 @@ export default function HomePage() {
 
       {/* ── Section 2: CONTENT PILLARS ──────────────────────────────── */}
       <section className="bg-ink-2 border-y border-gold/[0.18]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20">
           {/* Section heading */}
-          <div className="text-center mb-14">
+          <div className="text-center mb-10 sm:mb-14">
             <h2 className="font-display text-3xl md:text-4xl font-bold text-paper mb-4">
               What We Cover
             </h2>
@@ -237,13 +239,14 @@ export default function HomePage() {
       </section>
 
       {/* ── Section 3: FEATURED ARTICLES ────────────────────────────── */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="flex items-center justify-between mb-10">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20">
+        <div className="flex items-center justify-between mb-8 sm:mb-10">
           <h2 className="font-display text-3xl md:text-4xl font-bold text-paper">
             Featured
           </h2>
           <Link
             href="/articles"
+            aria-label="View all featured articles"
             className="text-sm text-gold hover:text-gold-light transition-colors duration-200 font-mono"
           >
             View all &rarr;
@@ -285,6 +288,7 @@ export default function HomePage() {
         <div className="mt-10 text-center">
           <Link
             href="/articles"
+            aria-label="View all articles"
             className="text-sm text-gold hover:text-gold-light transition-colors duration-200 font-mono"
           >
             View all articles &rarr;
@@ -521,6 +525,7 @@ async function CategoryRow({
         <h3 className="font-display text-xl font-bold text-paper">{label}</h3>
         <Link
           href={`/category/${category}`}
+          aria-label={`View all ${label} articles`}
           className="text-sm text-gold hover:text-gold-light transition-colors duration-200 font-mono"
         >
           View All &rarr;

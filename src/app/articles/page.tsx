@@ -129,7 +129,7 @@ export default async function ArticlesPage({ searchParams }: ArticlesPageProps) 
               {page > 1 && (
                 <Link
                   href={buildPageUrl(page - 1)}
-                  className="px-4 py-2 text-sm text-gold border border-gold/20 hover:border-gold/40 transition-colors duration-200"
+                  className="inline-flex items-center min-h-[44px] px-5 py-2 text-sm text-gold border border-gold/20 hover:border-gold/40 transition-colors duration-200"
                 >
                   &larr; Previous
                 </Link>
@@ -140,7 +140,7 @@ export default async function ArticlesPage({ searchParams }: ArticlesPageProps) 
               {result.hasMore && (
                 <Link
                   href={buildPageUrl(page + 1)}
-                  className="px-4 py-2 text-sm text-gold border border-gold/20 hover:border-gold/40 transition-colors duration-200"
+                  className="inline-flex items-center min-h-[44px] px-5 py-2 text-sm text-gold border border-gold/20 hover:border-gold/40 transition-colors duration-200"
                 >
                   Next &rarr;
                 </Link>

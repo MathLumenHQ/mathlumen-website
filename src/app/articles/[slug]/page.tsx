@@ -151,12 +151,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             )}
           </div>
 
-          <h1 className="font-display text-[2.5rem] md:text-[3.5rem] font-black text-paper leading-[1.1] mb-4">
+          <h1 className="font-display text-[1.75rem] sm:text-[2.5rem] md:text-[3.5rem] font-black text-paper leading-[1.15] mb-4">
             {article.title}
           </h1>
 
           {article.subtitle && (
-            <p className="text-xl md:text-2xl text-gold-light/70 font-body italic mb-6">
+            <p className="text-lg sm:text-xl md:text-2xl text-gold-light/70 font-body italic mb-6">
               {article.subtitle}
             </p>
           )}

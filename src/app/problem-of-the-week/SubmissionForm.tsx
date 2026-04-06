@@ -68,6 +68,7 @@ export function SubmissionForm({ problemNumber }: { problemNumber: number }) {
             id="name"
             name="name"
             type="text"
+            autoComplete="name"
             placeholder="Leonhard Euler"
             required
             value={name}
@@ -83,6 +84,7 @@ export function SubmissionForm({ problemNumber }: { problemNumber: number }) {
             id="email"
             name="email"
             type="email"
+            autoComplete="email"
             placeholder="euler@example.com"
             required
             value={email}
@@ -102,6 +104,7 @@ export function SubmissionForm({ problemNumber }: { problemNumber: number }) {
         <Textarea
           id="solution"
           name="solution"
+          autoComplete="off"
           placeholder="Let g(x) = ∫₀ˣ f(t) dt − x². Then g(0) = −0 = 0 and g(1) = 1 − 1 = 0. By the Mean Value Theorem..."
           required
           rows={12}

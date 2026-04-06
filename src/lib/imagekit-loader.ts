@@ -16,20 +16,27 @@ export default function imagekitLoader({
   width: number;
   quality?: number;
 }): string {
-  // If src is already a full URL (Unsplash, etc.), return as-is
+  const q = quality ?? 80;
+  const transforms = `w-${width},q-${q},f-auto`;
+
+  // Non-ImageKit absolute URLs (Unsplash, etc.) — serve as-is
   if (src.startsWith("http") && !src.includes("ik.imagekit.io")) {
     return src;
   }
 
-  // If src is already a full ImageKit URL, add transforms
+  // Full ImageKit URL — append transforms
   if (src.startsWith("http") && src.includes("ik.imagekit.io")) {
-    const separator = src.includes("?") ? "," : "?tr=";
-    return `${src}${separator}w-${width},q-${quality || 80},f-auto`;
+    if (src.includes("?tr=")) {
+      // URL already has ImageKit transforms — append to existing chain
+      return `${src},${transforms}`;
+    }
+    // No existing transforms — start a new tr= param
+    const separator = src.includes("?") ? "&tr=" : "?tr=";
+    return `${src}${separator}${transforms}`;
   }
 
-  // Otherwise, treat src as a relative path
+  // Relative path — construct full ImageKit URL from env endpoint
   const cleanSrc = src.startsWith("/") ? src.slice(1) : src;
   const endpoint = process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT;
-  const params = [`w-${width}`, `q-${quality || 80}`, "f-auto"];
-  return `${endpoint}/${cleanSrc}?tr=${params.join(",")}`;
+  return `${endpoint}/${cleanSrc}?tr=${transforms}`;
 }

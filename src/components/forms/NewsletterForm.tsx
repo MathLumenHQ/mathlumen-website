@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useActionState } from "react";
+import { useId, useState, useRef, useActionState } from "react";
 import { z } from "zod";
 import { subscribeAction } from "@/actions/subscribe";
 import { Button } from "@/components/ui/Button";
@@ -18,6 +18,8 @@ const initialState: ApiResponse<Subscriber> = { success: false };
  * States: idle -> loading -> success | error
  */
 export function NewsletterForm() {
+  const uid = useId();
+  const emailId = `${uid}-email`;
   const [clientError, setClientError] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -86,7 +88,9 @@ export function NewsletterForm() {
       <div className="flex flex-col sm:flex-row gap-3">
         <Input
           type="email"
+          id={emailId}
           name="email"
+          autoComplete="email"
           placeholder="your@email.com"
           required
           aria-label="Email address"

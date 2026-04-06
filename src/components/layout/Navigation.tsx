@@ -56,7 +56,7 @@ export function Navigation() {
             aria-label="MathLumen home"
           >
             <Logo size="sm" animated />
-            <span className="font-display text-lg font-bold text-paper tracking-tight hidden sm:inline">
+            <span className="font-display text-base sm:text-lg font-bold text-paper tracking-tight">
               Math<span className="text-gold">Lumen</span>
             </span>
           </Link>
@@ -67,6 +67,7 @@ export function Navigation() {
               <Link
                 key={link.href}
                 href={link.href}
+                aria-current={isActive(link.href) ? "page" : undefined}
                 className={cn(
                   "relative px-3 py-2 text-sm font-body tracking-wide transition-colors duration-200",
                   isActive(link.href) ? "text-gold" : "text-paper/60 hover:text-paper"
@@ -123,12 +124,26 @@ export function Navigation() {
             </Link>
           </div>
 
-          {/* Mobile hamburger — Radix Dialog trigger */}
-          <Dialog.Root key={pathname} open={mobileOpen} onOpenChange={setMobileOpen}>
+          {/* Mobile right-side controls */}
+          <div className="lg:hidden flex items-center gap-1">
+            {/* Mobile search trigger */}
+            <button
+              type="button"
+              onClick={() => document.dispatchEvent(new CustomEvent("open-search"))}
+              className="text-paper/60 hover:text-paper p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center transition-colors duration-200"
+              aria-label="Search articles"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+              </svg>
+            </button>
+
+            {/* Mobile hamburger — Radix Dialog trigger */}
+            <Dialog.Root key={pathname} open={mobileOpen} onOpenChange={setMobileOpen}>
             <Dialog.Trigger asChild>
               <button
                 type="button"
-                className="lg:hidden text-paper/60 hover:text-paper p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center transition-colors duration-200"
+                className="text-paper/60 hover:text-paper p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center transition-colors duration-200"
                 aria-label="Open navigation menu"
               >
                 <svg
@@ -176,7 +191,7 @@ export function Navigation() {
                     <Dialog.Close asChild>
                       <button
                         type="button"
-                        className="text-paper/60 hover:text-paper p-1 transition-colors duration-200"
+                        className="text-paper/60 hover:text-paper p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center transition-colors duration-200"
                         aria-label="Close navigation menu"
                       >
                         <svg
@@ -200,6 +215,8 @@ export function Navigation() {
                     <Link
                       key={link.href}
                       href={link.href}
+                      onClick={() => setMobileOpen(false)}
+                      aria-current={isActive(link.href) ? "page" : undefined}
                       className={cn(
                         "block px-6 py-3 text-base font-body transition-colors duration-200",
                         isActive(link.href)
@@ -216,6 +233,7 @@ export function Navigation() {
                 <div className="px-6 py-4 border-t border-gold/[0.18]">
                   <Link
                     href="/newsletter"
+                    onClick={() => setMobileOpen(false)}
                     className="block w-full text-center text-sm font-body px-4 py-2.5 bg-gold text-ink font-semibold hover:bg-gold-light rounded-none transition-colors duration-200"
                   >
                     Subscribe
@@ -224,6 +242,7 @@ export function Navigation() {
               </Dialog.Content>
             </Dialog.Portal>
           </Dialog.Root>
+          </div>
         </div>
       </div>
     </nav>

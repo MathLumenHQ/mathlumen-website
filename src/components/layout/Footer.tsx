@@ -13,6 +13,7 @@ import {
   YOUTUBE_URL,
   LINKEDIN_URL,
 } from "@/lib/constants";
+import { useCookieConsent } from "@/components/cookie/CookieConsentProvider";
 import type { ApiResponse, Subscriber } from "@/schema/types";
 
 const initialState: ApiResponse<Subscriber> = { success: false };
@@ -27,6 +28,7 @@ const initialState: ApiResponse<Subscriber> = { success: false };
  */
 export function Footer() {
   const currentYear = new Date().getFullYear();
+  const { openPreferences } = useCookieConsent();
 
   const [state, formAction, isPending] = useActionState(
     async (_prev: ApiResponse<Subscriber>, formData: FormData) => {
@@ -56,7 +58,7 @@ export function Footer() {
                 href={YOUTUBE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-muted hover:text-gold transition-colors duration-200"
+                className="inline-flex items-center justify-center w-9 h-9 text-muted hover:text-gold transition-colors duration-200"
                 aria-label="Follow us on YouTube"
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -68,7 +70,7 @@ export function Footer() {
                 href={LINKEDIN_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-muted hover:text-gold transition-colors duration-200"
+                className="inline-flex items-center justify-center w-9 h-9 text-muted hover:text-gold transition-colors duration-200"
                 aria-label="Follow us on LinkedIn"
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -80,7 +82,7 @@ export function Footer() {
                 href={TWITTER_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-muted hover:text-gold transition-colors duration-200"
+                className="inline-flex items-center justify-center w-9 h-9 text-muted hover:text-gold transition-colors duration-200"
                 aria-label="Follow us on X"
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -92,7 +94,7 @@ export function Footer() {
                 href={GITHUB_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-muted hover:text-gold transition-colors duration-200"
+                className="inline-flex items-center justify-center w-9 h-9 text-muted hover:text-gold transition-colors duration-200"
                 aria-label="View our GitHub"
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -167,7 +169,9 @@ export function Footer() {
               <form action={formAction} className="space-y-3">
                 <Input
                   type="email"
+                  id="footer-newsletter-email"
                   name="email"
+                  autoComplete="email"
                   placeholder="your@email.com"
                   required
                   aria-label="Email address for newsletter"
@@ -195,14 +199,22 @@ export function Footer() {
           <p className="text-xs text-muted">
             &copy; {currentYear} MathLumen. All rights reserved.
           </p>
-          <div className="flex items-center gap-4 text-xs text-muted">
-            <Link href="/about" className="hover:text-paper transition-colors duration-200">
+          <div className="flex items-center gap-1 text-xs text-muted">
+            <Link href="/privacy" className="px-2 py-2 hover:text-paper transition-colors duration-200">
               Privacy
             </Link>
             <span className="text-gold/20">&middot;</span>
-            <Link href="/about" className="hover:text-paper transition-colors duration-200">
+            <Link href="/about" className="px-2 py-2 hover:text-paper transition-colors duration-200">
               Terms
             </Link>
+            <span className="text-gold/20">&middot;</span>
+            <button
+              type="button"
+              onClick={openPreferences}
+              className="px-2 py-2 hover:text-paper transition-colors duration-200 cursor-pointer"
+            >
+              Cookie Settings
+            </button>
           </div>
         </div>
       </div>

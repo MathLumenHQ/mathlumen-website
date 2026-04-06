@@ -1,3 +1,6 @@
+"use client";
+
+import { useId } from "react";
 import { cn } from "@/lib/utils";
 
 type LogoSize = "sm" | "md" | "lg" | "xl";
@@ -29,10 +32,11 @@ export function Logo({
   animated = false,
   className,
 }: LogoProps) {
+  const uid = useId();
   const px = sizes[size];
   const { letter } = coreColors[variant];
 
-  const gradId = `core-grad-${size}`;
+  const gradId = `${uid}-core-grad`;
 
   return (
     <svg

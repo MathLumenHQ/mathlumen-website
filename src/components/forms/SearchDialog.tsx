@@ -165,6 +165,7 @@ export function SearchDialog() {
                 onChange={(e) => handleSearch(e.target.value)}
                 placeholder="Search articles..."
                 className="flex-1 bg-transparent text-paper py-4 focus:outline-none placeholder:text-muted font-body"
+                autoComplete="off"
                 autoFocus
                 aria-label="Search articles"
                 role="combobox"

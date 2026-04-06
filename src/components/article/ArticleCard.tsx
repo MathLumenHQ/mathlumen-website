@@ -42,7 +42,7 @@ export function ArticleCard({
       >
         {/* Full-bleed cover image */}
         {article.coverImageUrl && (
-          <Link href={articleHref} className="block relative h-80 md:h-96 overflow-hidden">
+          <Link href={articleHref} className="block relative h-56 sm:h-72 md:h-96 overflow-hidden">
             <OptimizedImage
               src={article.coverImageUrl}
               alt={article.title}
@@ -56,8 +56,8 @@ export function ArticleCard({
             <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/60 to-transparent" />
 
             {/* Text overlay */}
-            <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
-              <div className="flex items-center gap-3 mb-3">
+            <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 md:p-8">
+              <div className="flex items-center gap-3 mb-2 sm:mb-3">
                 <Badge category={category} size="sm">{article.category}</Badge>
                 {article.readTimeMinutes && (
                   <span className="text-xs text-paper/60 font-mono">
@@ -65,11 +65,11 @@ export function ArticleCard({
                   </span>
                 )}
               </div>
-              <h3 className="font-display text-2xl md:text-3xl font-bold text-paper leading-tight mb-2 group-hover:text-gold-light transition-colors duration-200">
+              <h3 className="font-display text-xl sm:text-2xl md:text-3xl font-bold text-paper leading-tight mb-2 group-hover:text-gold-light transition-colors duration-200">
                 {article.title}
               </h3>
               {article.subtitle && (
-                <p className="text-gold-light/70 text-sm font-display italic mb-3">
+                <p className="text-gold-light/90 text-sm font-display italic mb-3">
                   {article.subtitle}
                 </p>
               )}
@@ -110,7 +110,7 @@ export function ArticleCard({
         {/* Image left */}
         {article.coverImageUrl && (
           <Link href={articleHref} className="block overflow-hidden">
-            <div className="relative h-48 md:h-full min-h-[160px]">
+            <div className="relative h-44 md:h-full min-h-[140px]">
               <OptimizedImage
                 src={article.coverImageUrl}
                 alt={article.title}
@@ -176,7 +176,7 @@ export function ArticleCard({
       )}
 
       {/* Content */}
-      <div className="p-6 flex flex-col justify-between min-h-[200px]">
+      <div className="p-4 sm:p-6 flex flex-col justify-between min-h-[180px]">
         <div>
           <div className="flex items-center gap-3 mb-3">
             <Badge category={category} size="sm">{article.category}</Badge>
@@ -196,7 +196,7 @@ export function ArticleCard({
           </Link>
 
           {article.subtitle && (
-            <p className="text-gold-light/70 text-sm mb-2 font-display italic">
+            <p className="text-gold-light/90 text-sm mb-2 font-display italic">
               {article.subtitle}
             </p>
           )}

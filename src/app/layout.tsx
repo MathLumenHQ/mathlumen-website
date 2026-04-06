@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Crimson_Pro, DM_Mono } from "next/font/google";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/next";
 import { Navigation } from "@/components/layout/Navigation";
 import { Footer } from "@/components/layout/Footer";
 import { SearchDialog } from "@/components/forms/SearchDialog";
+import { CookieConsentProvider } from "@/components/cookie/CookieConsentProvider";
+import { CookieConsentBanner } from "@/components/cookie/CookieConsentBanner";
+import { CookiePreferencesModal } from "@/components/cookie/CookiePreferencesModal";
 import { createMetadata } from "@/lib/metadata";
 import { SITE_NAME, SITE_DESCRIPTION } from "@/lib/constants";
 import "@/styles/globals.css";
@@ -78,14 +82,21 @@ export default function RootLayout({
           Skip to main content
         </a>
 
-        <Navigation />
-        <SearchDialog />
+        <CookieConsentProvider>
+          <Navigation />
+          <SearchDialog />
 
-        <main id="main-content" className="flex-1 pt-16">
-          {children}
-        </main>
+          <main id="main-content" className="flex-1 pt-16">
+            {children}
+          </main>
 
-        <Footer />
+          <Footer />
+          <CookieConsentBanner />
+          <CookiePreferencesModal />
+        </CookieConsentProvider>
+
+        {/* Vercel Analytics — cookieless baseline, no consent required */}
+        <Analytics />
         <SpeedInsights />
       </body>
     </html>
