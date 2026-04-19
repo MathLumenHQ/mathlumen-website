@@ -19,7 +19,12 @@ export async function POST(req: NextRequest) {
     return blockedByOrigin;
   }
 
-  const blockedByRateLimit = enforceRateLimit(req, "problem-submissions", 10, 15 * 60 * 1000);
+  const blockedByRateLimit = await enforceRateLimit(
+    req,
+    "problem-submissions",
+    10,
+    15 * 60 * 1000
+  );
   if (blockedByRateLimit) {
     return blockedByRateLimit;
   }

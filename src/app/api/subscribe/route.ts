@@ -20,7 +20,12 @@ export async function POST(
     return blockedByOrigin as NextResponse<ApiResponse<Subscriber>>;
   }
 
-  const blockedByRateLimit = enforceRateLimit(request, "subscribe", 8, 15 * 60 * 1000);
+  const blockedByRateLimit = await enforceRateLimit(
+    request,
+    "subscribe",
+    8,
+    15 * 60 * 1000
+  );
   if (blockedByRateLimit) {
     return blockedByRateLimit as NextResponse<ApiResponse<Subscriber>>;
   }

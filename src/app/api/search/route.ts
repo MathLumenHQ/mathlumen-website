@@ -12,7 +12,7 @@ import { buildJsonResponse, enforceRateLimit } from "@/lib/request-security";
 export async function GET(
   request: NextRequest
 ): Promise<NextResponse<ApiResponse<SearchResult[]>>> {
-  const blockedByRateLimit = enforceRateLimit(request, "search", 60, 60 * 1000);
+  const blockedByRateLimit = await enforceRateLimit(request, "search", 60, 60 * 1000);
   if (blockedByRateLimit) {
     return blockedByRateLimit as NextResponse<ApiResponse<SearchResult[]>>;
   }

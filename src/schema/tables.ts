@@ -124,6 +124,17 @@ export const problemSubmissions = pgTable("problem_submissions", {
   reviewerNote: text("reviewer_note"),
 });
 
+export const requestRateLimits = pgTable(
+  "request_rate_limits",
+  {
+    key: text("key").primaryKey(),
+    count: integer("count").notNull().default(0),
+    resetAt: timestamp("reset_at", { withTimezone: true }).notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [index("request_rate_limits_reset_at_idx").on(table.resetAt)]
+);
+
 /** Junction table linking articles to tags (many-to-many) */
 export const articleTags = pgTable(
   "article_tags",

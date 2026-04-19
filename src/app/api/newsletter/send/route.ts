@@ -32,7 +32,12 @@ export async function POST(request: NextRequest) {
     return blockedByOrigin;
   }
 
-  const blockedByRateLimit = enforceRateLimit(request, "newsletter-send", 5, 60 * 60 * 1000);
+  const blockedByRateLimit = await enforceRateLimit(
+    request,
+    "newsletter-send",
+    5,
+    60 * 60 * 1000
+  );
   if (blockedByRateLimit) {
     return blockedByRateLimit;
   }

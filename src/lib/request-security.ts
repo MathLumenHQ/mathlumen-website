@@ -36,14 +36,14 @@ export function enforceSameOrigin(request: NextRequest): NextResponse | null {
   return null;
 }
 
-export function enforceRateLimit(
+export async function enforceRateLimit(
   request: NextRequest,
   scope: string,
   limit: number,
   windowMs: number
-): NextResponse | null {
+): Promise<NextResponse | null> {
   const ip = getForwardedIp(request);
-  const result = applyRateLimit({
+  const result = await applyRateLimit({
     key: `${scope}:${ip}`,
     limit,
     windowMs,
@@ -62,15 +62,15 @@ export function enforceRateLimit(
   return null;
 }
 
-export function withRateLimitHeaders(
+export async function withRateLimitHeaders(
   request: NextRequest,
   response: NextResponse,
   scope: string,
   limit: number,
   windowMs: number
-): NextResponse {
+): Promise<NextResponse> {
   const ip = getForwardedIp(request);
-  const result = applyRateLimit({
+  const result = await applyRateLimit({
     key: `${scope}:headers:${ip}`,
     limit,
     windowMs,

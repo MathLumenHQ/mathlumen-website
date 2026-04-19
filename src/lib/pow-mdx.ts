@@ -90,19 +90,21 @@ The proof constructs the auxiliary function $g(x) = \\int_0^x f(t)\\,dt - x^2$ a
     );
 }
 
-function findPowSolutionFile(slug: string): string | null {
-  if (!fs.existsSync(POW_CONTENT_DIR)) return null;
-  const all = fs.readdirSync(POW_CONTENT_DIR, { recursive: true }) as string[];
-  const match = all.find((f) => f.endsWith(`${slug}.mdx`));
-  if (!match) return null;
-  return path.join(POW_CONTENT_DIR, match);
+function findPowSolutionFile(year: number | string, slug: string): string | null {
+  const directPath = path.join(POW_CONTENT_DIR, String(year), `${slug}.mdx`);
+  if (fs.existsSync(directPath)) {
+    return directPath;
+  }
+
+  return null;
 }
 
 export async function getPowSolutionContent(
+  year: number | string,
   slug: string
 ): Promise<CompiledPowSolution | null> {
   try {
-    const filePath = findPowSolutionFile(slug);
+    const filePath = findPowSolutionFile(year, slug);
     if (!filePath) return null;
 
     const source = fs.readFileSync(filePath, "utf-8");

@@ -1,5 +1,12 @@
 import { relations } from "drizzle-orm";
-import { articles, authors, tags, articleTags, subscribers } from "./tables";
+import {
+  articles,
+  authors,
+  tags,
+  articleTags,
+  subscribers,
+  requestRateLimits,
+} from "./tables";
 import {
   powIssues,
   powIssueAuthors,
@@ -42,6 +49,8 @@ export const articleTagsRelations = relations(articleTags, ({ one }) => ({
 
 /** Subscribers (standalone, no relations needed) */
 export const subscribersRelations = relations(subscribers, () => ({}));
+
+export const requestRateLimitsRelations = relations(requestRateLimits, () => ({}));
 
 /** Published POW issue has many authors, keywords, and solvers */
 export const powIssuesRelations = relations(powIssues, ({ many }) => ({

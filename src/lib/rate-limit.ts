@@ -1,7 +1,5 @@
-type RateLimitBucket = {
-  count: number;
-  resetAt: number;
-};
+import { sql } from "drizzle-orm";
+import { db } from "@/lib/db";
 
 type RateLimitOptions = {
   key: string;
@@ -9,60 +7,57 @@ type RateLimitOptions = {
   windowMs: number;
 };
 
-type RateLimitResult = {
+export type RateLimitResult = {
   allowed: boolean;
   remaining: number;
   resetAt: number;
   retryAfter: number;
 };
 
-declare global {
-  // eslint-disable-next-line no-var
-  var __mathlumenRateLimitStore: Map<string, RateLimitBucket> | undefined;
-}
+type RateLimitRow = {
+  count: number;
+  resetAt: Date;
+};
 
-const store = globalThis.__mathlumenRateLimitStore ?? new Map<string, RateLimitBucket>();
-
-if (!globalThis.__mathlumenRateLimitStore) {
-  globalThis.__mathlumenRateLimitStore = store;
-}
-
-function pruneExpiredEntries(now: number) {
-  for (const [key, bucket] of store.entries()) {
-    if (bucket.resetAt <= now) {
-      store.delete(key);
-    }
-  }
-}
-
-export function applyRateLimit({
+export async function applyRateLimit({
   key,
   limit,
   windowMs,
-}: RateLimitOptions): RateLimitResult {
-  const now = Date.now();
-  pruneExpiredEntries(now);
+}: RateLimitOptions): Promise<RateLimitResult> {
+  const now = new Date();
+  const resetAt = new Date(now.getTime() + windowMs);
 
-  const current = store.get(key);
+  const result = await db.execute(sql<RateLimitRow>`
+    insert into request_rate_limits ("key", "count", "reset_at", "updated_at")
+    values (${key}, 1, ${resetAt}, ${now})
+    on conflict ("key") do update
+    set
+      "count" = case
+        when request_rate_limits.reset_at <= ${now} then 1
+        else request_rate_limits.count + 1
+      end,
+      "reset_at" = case
+        when request_rate_limits.reset_at <= ${now} then ${resetAt}
+        else request_rate_limits.reset_at
+      end,
+      "updated_at" = ${now}
+    returning
+      "count",
+      "reset_at" as "resetAt"
+  `);
 
-  if (!current || current.resetAt <= now) {
-    const resetAt = now + windowMs;
-    store.set(key, { count: 1, resetAt });
-    return {
-      allowed: true,
-      remaining: Math.max(0, limit - 1),
-      resetAt,
-      retryAfter: Math.ceil(windowMs / 1000),
-    };
+  const bucket = result[0] as RateLimitRow | undefined;
+
+  if (!bucket) {
+    throw new Error("Rate limit bucket could not be created");
   }
 
-  current.count += 1;
-  store.set(key, current);
+  const resetAtMs = new Date(bucket.resetAt).getTime();
 
   return {
-    allowed: current.count <= limit,
-    remaining: Math.max(0, limit - current.count),
-    resetAt: current.resetAt,
-    retryAfter: Math.max(1, Math.ceil((current.resetAt - now) / 1000)),
+    allowed: bucket.count <= limit,
+    remaining: Math.max(0, limit - bucket.count),
+    resetAt: resetAtMs,
+    retryAfter: Math.max(1, Math.ceil((resetAtMs - now.getTime()) / 1000)),
   };
 }

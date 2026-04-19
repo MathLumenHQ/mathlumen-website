@@ -6,7 +6,6 @@ import {
   getPublishedPowIssueByPublicId,
   getPublishedPowIssues,
 } from "@/lib/queries/pow";
-import { getProblemBySolutionSlug } from "@/lib/problem-of-the-week";
 import {
   compilePowMarkdown,
   getPowSolutionContent,
@@ -65,12 +64,9 @@ export default async function PowIssuePage({ params }: PowIssuePageProps) {
     notFound();
   }
 
-  const [solution, linkedProblem] = await Promise.all([
-    getPowSolutionContent(issue.slug),
-    Promise.resolve(getProblemBySolutionSlug(issue.slug)),
-  ]);
+  const solution = await getPowSolutionContent(issue.year, issue.slug);
 
-  const problemMarkdown = solution?.frontmatter.problemStatement ?? linkedProblem?.statement;
+  const problemMarkdown = solution?.frontmatter.problemStatement ?? null;
   const problemContent = problemMarkdown
     ? await compilePowMarkdown(problemMarkdown)
     : null;
