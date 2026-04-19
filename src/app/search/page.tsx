@@ -8,6 +8,10 @@ export const metadata = createMetadata({
   title: "Search",
   description: "Search MathLumen articles across all categories.",
   path: "/search",
+  robots: {
+    index: false,
+    follow: true,
+  },
 });
 
 interface SearchPageProps {

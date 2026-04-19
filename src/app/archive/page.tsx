@@ -50,6 +50,34 @@ export default async function ArchivePage() {
         <SearchButton />
       </div>
 
+      <section className="mb-12 border border-gold/[0.18] bg-ink-2 p-6 sm:p-8">
+        <p className="font-mono text-gold uppercase tracking-[0.2em] text-xs mb-3">
+          Problem of the Week
+        </p>
+        <h2 className="font-display text-2xl font-bold text-paper mb-3">
+          Looking for published POW solutions?
+        </h2>
+        <p className="text-muted text-base leading-relaxed mb-5 max-w-2xl">
+          Published Problem of the Week solutions live in their own archive, separate
+          from the main article archive. Browse metadata, solution pages, and final
+          PDF releases there.
+        </p>
+        <div className="flex flex-wrap items-center gap-4">
+          <Link
+            href="/pow/archive"
+            className="inline-flex items-center justify-center rounded-none bg-gold px-5 py-2.5 text-ink font-semibold hover:bg-gold-light transition-colors duration-200"
+          >
+            Open POW Archive
+          </Link>
+          <Link
+            href="/problem-of-the-week"
+            className="text-sm text-gold hover:text-gold-light transition-colors duration-200 font-mono"
+          >
+            View current weekly problem &rarr;
+          </Link>
+        </div>
+      </section>
+
       {grouped.size === 0 ? (
         <div className="text-center py-20">
           <p className="font-display text-xl text-muted italic">

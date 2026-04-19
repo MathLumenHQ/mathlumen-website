@@ -31,6 +31,7 @@ export const NAV_CATEGORY_LINKS = [
   { href: "/category/ai-ml", label: "AI & ML" },
   { href: "/category/essay", label: "Essays" },
   { href: "/news", label: "News" },
+  { href: "/problem-of-the-week", label: "POW" },
   { href: "/tools/mltex", label: "MLTeX" },
 ] as const;
 
@@ -38,6 +39,7 @@ export const NAV_CATEGORY_LINKS = [
 export const NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/articles", label: "Articles" },
+  { href: "/problem-of-the-week", label: "POW" },
   { href: "/category/research", label: "Research" },
   { href: "/category/history", label: "History" },
   { href: "/category/applied", label: "Applied Math" },
@@ -53,6 +55,7 @@ export const NAV_LINKS = [
 export const FOOTER_LINKS = {
   publication: [
     { href: "/about", label: "About" },
+    { href: "/pow/archive", label: "POW Series" },
     { href: "/topics", label: "All Topics" },
     { href: "/authors", label: "Write for Us" },
     { href: "/archive", label: "Archive" },

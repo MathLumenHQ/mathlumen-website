@@ -1,9 +1,10 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 import { getArticleBySlug } from "@/lib/queries/articles";
-import { getArticleContent, listArticleSlugs, getArticleRawBody } from "@/lib/mdx";
+import { getPublishedPowIssueBySlug } from "@/lib/queries/pow";
+import { getArticleContent, getArticleRawBody } from "@/lib/mdx";
 import { createMetadata } from "@/lib/metadata";
 import { formatDate } from "@/lib/utils";
 import { SITE_URL } from "@/lib/constants";
@@ -22,6 +23,7 @@ import { ToolsPromo } from "@/components/sidebar/ToolsPromo";
 import { AdSlot } from "@/components/sidebar/AdSlot";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { ViewTracker } from "./ViewTracker";
+import { PowSolutionDownload } from "@/components/article/PowSolutionDownload";
 import type { Category } from "@/schema/types";
 import type { Metadata } from "next";
 
@@ -35,18 +37,25 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 export const revalidate = 3600;
+export const dynamicParams = true;
 
 interface ArticlePageProps {
   params: Promise<{ slug: string }>;
 }
 
-export async function generateStaticParams() {
-  const slugs = listArticleSlugs();
-  return slugs.map((slug) => ({ slug }));
-}
-
 export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
   const { slug } = await params;
+  if (slug.startsWith("pow-")) {
+    const powIssue = await getPublishedPowIssueBySlug(slug);
+    if (powIssue) {
+      return createMetadata({
+        title: powIssue.title,
+        description: powIssue.abstract ?? `Published Problem of the Week solution ${powIssue.publicId}.`,
+        path: `/pow/${powIssue.publicId}`,
+        type: "article",
+      });
+    }
+  }
   const article = await getArticleBySlug(slug);
 
   if (!article) {
@@ -68,6 +77,12 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params;
+  if (slug.startsWith("pow-")) {
+    const powIssue = await getPublishedPowIssueBySlug(slug);
+    if (powIssue) {
+      redirect(`/pow/${powIssue.publicId}`);
+    }
+  }
   const article = await getArticleBySlug(slug);
 
   if (!article) {
@@ -204,6 +219,13 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           {/* Share row + separator */}
           <div className="mt-6 flex items-center justify-between gap-4">
             <ShareButtons title={article.title} url={articleUrl} variant="compact" />
+            {article.slug.startsWith("pow-") && article.publishedAt && (
+              <PowSolutionDownload
+                articleTitle={article.title}
+                slug={article.slug}
+                publishedAt={new Date(article.publishedAt).toISOString()}
+              />
+            )}
           </div>
           <div className="mt-4 h-px bg-gold/[0.18]" />
         </header>

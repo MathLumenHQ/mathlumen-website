@@ -111,27 +111,17 @@ export const tags = pgTable("tags", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
-/**
- * Problem of the Week — reader solution submissions.
- *
- * Run once in Supabase SQL Editor before using the submission API:
- *
- *   CREATE TABLE problem_submissions (
- *     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
- *     name text NOT NULL,
- *     email text NOT NULL,
- *     solution text NOT NULL,
- *     problem_number integer NOT NULL,
- *     submitted_at timestamptz DEFAULT now()
- *   );
- */
+/** Problem of the Week — reader solution submissions */
 export const problemSubmissions = pgTable("problem_submissions", {
   id: uuid("id").primaryKey().defaultRandom(),
-  name: text("name").notNull(),
-  email: varchar("email", { length: 256 }).notNull(),
-  solution: text("solution").notNull(),
   problemNumber: integer("problem_number").notNull(),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  solutionText: text("solution_text").notNull(),
   submittedAt: timestamp("submitted_at", { withTimezone: true }).defaultNow().notNull(),
+  reviewed: boolean("reviewed").default(false).notNull(),
+  isCorrect: boolean("is_correct"),
+  reviewerNote: text("reviewer_note"),
 });
 
 /** Junction table linking articles to tags (many-to-many) */

@@ -1,0 +1,115 @@
+---
+title: "Problem of the Week #1 - Solution"
+slug: "pow-001-solution"
+problemStatement: |
+  Let $f : [0, 1] \to \mathbb{R}$ be a continuous function satisfying
+
+  $$
+  \int_0^1 f(x)\,dx = 1.
+  $$
+
+  Prove that there exists a point $c \in (0, 1)$ such that
+
+  $$
+  f(c) = 2c.
+  $$
+---
+
+## Solution
+
+### Step 1 — Construction of the auxiliary function
+
+Define $g : [0,1] \to \mathbb{R}$ by
+
+$$
+g(x) = \int_0^x f(t)\,dt - x^2
+$$
+
+Since $f$ is continuous on $[0,1]$, the **Fundamental Theorem of Calculus** ensures that the function
+
+$$
+x \mapsto \int_0^x f(t)\,dt
+$$
+
+is continuous on $[0,1]$.
+
+The function $x \mapsto x^2$ is a polynomial, hence continuous on $[0,1]$ and differentiable on $(0,1)$.
+
+Therefore, $g$ is continuous on $[0,1]$ and differentiable on $(0,1)$.
+
+---
+
+### Step 2 — Verification of Rolle's theorem hypotheses
+
+We compute the endpoint values:
+
+$$
+g(0) = \int_0^0 f(t)\,dt - 0^2 = 0
+$$
+
+$$
+g(1) = \int_0^1 f(t)\,dt - 1^2
+$$
+
+From the given condition:
+
+$$
+\int_0^1 f(t)\,dt = 1
+$$
+
+we get:
+
+$$
+g(1) = 1 - 1 = 0
+$$
+
+Hence, $g(0) = g(1) = 0$.
+
+---
+
+#### Rolle's Theorem
+
+> Let $h : [a,b] \to \mathbb{R}$ be continuous on $[a,b]$ and differentiable on $(a,b)$, and suppose $h(a) = h(b)$.  
+> Then there exists $\xi \in (a,b)$ such that $h'(\xi) = 0$.
+
+Applying this to $g$:
+
+- $g$ is continuous on $[0,1]$
+- $g$ is differentiable on $(0,1)$
+- $g(0) = g(1) = 0$
+
+Therefore, there exists $c \in (0,1)$ such that:
+
+$$
+g'(c) = 0
+$$
+
+---
+
+### Step 3 — Conclusion via the derivative
+
+Differentiating:
+
+$$
+g(x) = \int_0^x f(t)\,dt - x^2
+$$
+
+Using the **Fundamental Theorem of Calculus**:
+
+$$
+g'(x) = f(x) - 2x
+$$
+
+Evaluating at $c$:
+
+$$
+0 = g'(c) = f(c) - 2c
+$$
+
+Thus,
+
+$$
+f(c) = 2c
+$$
+
+which is the required result. ∎

@@ -1,9 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
+import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
-import { Button } from "@/components/ui/Button";
 
 type Status = "idle" | "submitting" | "success" | "error";
 
@@ -98,14 +99,31 @@ export function SubmissionForm({ problemNumber }: { problemNumber: number }) {
         <label htmlFor="solution" className="block text-sm font-mono text-paper/70">
           Your solution
         </label>
-        <p className="text-xs text-muted font-mono">
-          Write your proof in plain text. LaTeX notation (e.g. \int, \to) is welcome — we will render it when reviewing.
-        </p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-1">
+          <p className="text-xs text-muted font-mono">
+            Paste your LaTeX proof below. Use{" "}
+            <a
+              href="/tools/mltex"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gold hover:text-gold/80 underline underline-offset-2 transition-colors duration-200"
+            >
+              MLTeX
+            </a>{" "}
+            to write and preview your proof before submitting.
+          </p>
+          <Link
+            href="/problem-of-the-week/how-to-submit"
+            className="text-xs font-mono text-paper/50 hover:text-gold transition-colors duration-200 whitespace-nowrap flex-shrink-0"
+          >
+            Submission guide →
+          </Link>
+        </div>
         <Textarea
           id="solution"
           name="solution"
           autoComplete="off"
-          placeholder="Let g(x) = ∫₀ˣ f(t) dt − x². Then g(0) = −0 = 0 and g(1) = 1 − 1 = 0. By the Mean Value Theorem..."
+          placeholder="Let g(x) = \int_0^x f(t) dt - x^2. Then g(0) = 0 and g(1) = 1 - 1 = 0. By the Mean Value Theorem..."
           required
           rows={12}
           value={solution}

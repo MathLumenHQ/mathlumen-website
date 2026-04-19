@@ -1,7 +1,12 @@
 import { db } from "@/lib/db";
 import { articles, authors } from "@/schema/tables";
-import { eq, desc, asc, and, sql, ilike, ne } from "drizzle-orm";
-import type { ArticleQueryParams, ArticleWithAuthor, PaginatedResponse } from "@/schema/types";
+import { eq, desc, asc, and, sql, ne } from "drizzle-orm";
+import type {
+  ArticleQueryParams,
+  ArticleWithAuthor,
+  PaginatedResponse,
+  ArticleSearchResult,
+} from "@/schema/types";
 
 /**
  * Fetch a paginated list of published articles with optional filters.
@@ -156,10 +161,9 @@ export async function searchArticles(
 ): Promise<ArticleWithAuthor[]> {
   try {
     const trimmed = query.trim();
-    const tsQuery = trimmed
-      .split(/\s+/)
-      .filter(Boolean)
-      .join(" & ");
+    if (!trimmed) {
+      return [];
+    }
 
     // Primary: tsvector full-text search
     const result = await db
@@ -169,11 +173,11 @@ export async function searchArticles(
       .where(
         and(
           eq(articles.isPublished, true),
-          sql`${articles.searchVector} @@ to_tsquery('english', ${tsQuery})`
+          sql`${articles.searchVector} @@ websearch_to_tsquery('english', ${trimmed})`
         )
       )
       .orderBy(
-        sql`ts_rank(${articles.searchVector}, to_tsquery('english', ${tsQuery})) DESC`
+        sql`ts_rank(${articles.searchVector}, websearch_to_tsquery('english', ${trimmed})) DESC`
       )
       .limit(limit);
 
@@ -192,7 +196,11 @@ export async function searchArticles(
       .where(
         and(
           eq(articles.isPublished, true),
-          ilike(articles.title, `%${trimmed}%`)
+          sql`(
+            ${articles.title} ILIKE ${`%${trimmed}%`}
+            OR ${articles.subtitle} ILIKE ${`%${trimmed}%`}
+            OR ${articles.excerpt} ILIKE ${`%${trimmed}%`}
+          )`
         )
       )
       .orderBy(desc(articles.publishedAt))
@@ -206,4 +214,23 @@ export async function searchArticles(
     const message = error instanceof Error ? error.message : "Unknown error";
     throw new Error(`Search failed: ${message}`);
   }
+}
+
+export async function searchArticleResults(
+  query: string,
+  limit: number = 10
+): Promise<ArticleSearchResult[]> {
+  const results = await searchArticles(query, limit);
+
+  return results.map((article) => ({
+    id: article.id,
+    resultType: "article",
+    href: `/articles/${article.slug}`,
+    title: article.title,
+    subtitle: article.subtitle,
+    excerpt: article.excerpt,
+    category: article.category as ArticleSearchResult["category"],
+    authorName: article.author.name,
+    publishedAt: article.publishedAt,
+  }));
 }

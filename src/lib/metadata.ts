@@ -12,6 +12,8 @@ interface CreateMetadataOptions {
   path: string;
   /** OpenGraph type */
   type?: "website" | "article";
+  /** Search engine indexing directives */
+  robots?: Metadata["robots"];
 }
 
 /**
@@ -24,6 +26,7 @@ export function createMetadata({
   image,
   path,
   type = "website",
+  robots,
 }: CreateMetadataOptions): Metadata {
   const url = `${SITE_URL}${path}`;
   const ogImage = image ?? `${SITE_URL}/opengraph-image`;
@@ -31,7 +34,7 @@ export function createMetadata({
   return {
     title: `${title} | ${SITE_NAME}`,
     description,
-    robots: {
+    robots: robots ?? {
       index: true,
       follow: true,
     },

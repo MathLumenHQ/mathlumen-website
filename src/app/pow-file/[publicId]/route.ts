@@ -1,0 +1,33 @@
+import { NextRequest } from "next/server";
+import { notFound } from "next/navigation";
+import { getPublishedPowIssueByPublicId } from "@/lib/queries/pow";
+
+interface PdfRouteProps {
+  params: Promise<{ publicId: string }>;
+}
+
+export async function GET(request: NextRequest, { params }: PdfRouteProps) {
+  const { publicId } = await params;
+  const issue = await getPublishedPowIssueByPublicId(publicId);
+
+  if (!issue) {
+    notFound();
+  }
+
+  const sourceResponse = await fetch(issue.pdfUrl, { cache: "no-store" });
+  if (!sourceResponse.ok || !sourceResponse.body) {
+    return new Response("PDF unavailable", { status: 502 });
+  }
+
+  const download = request.nextUrl.searchParams.get("download") === "1";
+  const fileName = `${publicId}.pdf`;
+
+  return new Response(sourceResponse.body, {
+    status: 200,
+    headers: {
+      "Content-Type": sourceResponse.headers.get("content-type") ?? "application/pdf",
+      "Cache-Control": "public, max-age=3600, s-maxage=3600",
+      "Content-Disposition": `${download ? "attachment" : "inline"}; filename="${fileName}"`,
+    },
+  });
+}

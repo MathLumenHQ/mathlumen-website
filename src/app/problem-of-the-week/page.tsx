@@ -6,6 +6,7 @@ import remarkGfm from "remark-gfm";
 import { currentProblem } from "@/lib/problem-of-the-week";
 import type { ProblemDifficulty } from "@/lib/problem-of-the-week";
 import { createMetadata } from "@/lib/metadata";
+import { getPowIssueHref, getPublishedPowIssueBySlug } from "@/lib/queries/pow";
 import { SubmissionForm } from "./SubmissionForm";
 import type { Metadata } from "next";
 
@@ -42,10 +43,13 @@ async function compileMath(source: string) {
 }
 
 export default async function ProblemOfTheWeekPage() {
-  const statementContent = await compileMath(currentProblem.statement);
-  const hintContent = currentProblem.hint
-    ? await compileMath(currentProblem.hint)
-    : null;
+  const [statementContent, hintContent, previousIssue] = await Promise.all([
+    compileMath(currentProblem.statement),
+    currentProblem.hint ? compileMath(currentProblem.hint) : Promise.resolve(null),
+    currentProblem.previousSlug
+      ? getPublishedPowIssueBySlug(currentProblem.previousSlug)
+      : Promise.resolve(null),
+  ]);
 
   const weekLabel = new Date(currentProblem.weekOf).toLocaleDateString("en-US", {
     month: "long",
@@ -173,7 +177,7 @@ export default async function ProblemOfTheWeekPage() {
             Last Week&apos;s Solution
           </p>
           <Link
-            href={`/articles/${currentProblem.previousSlug}`}
+            href={previousIssue ? getPowIssueHref(previousIssue.publicId) : `/${currentProblem.previousSlug}`}
             className="inline-flex items-center gap-2 text-paper hover:text-gold transition-colors duration-200 font-body"
           >
             <span aria-hidden="true" className="text-gold/50">&rarr;</span>
@@ -181,6 +185,16 @@ export default async function ProblemOfTheWeekPage() {
           </Link>
         </section>
       )}
+
+      {/* ── Archive link ───────────────────────────────────────────── */}
+      <div className="mt-8 pt-6 border-t border-gold/[0.12]">
+        <Link
+          href="/problem-of-the-week/archive"
+          className="font-mono text-xs text-gold/60 hover:text-gold transition-colors duration-200 uppercase tracking-[0.15em]"
+        >
+          View all past problems →
+        </Link>
+      </div>
     </div>
   );
 }

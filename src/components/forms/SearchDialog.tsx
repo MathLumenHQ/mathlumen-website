@@ -7,8 +7,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import { cn, formatDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/Badge";
-import type { ArticleWithAuthor } from "@/schema/types";
-import type { Category } from "@/schema/types";
+import type { SearchResult, Category } from "@/schema/types";
 
 /**
  * Full-text search dialog triggered by Cmd+K (Mac) / Ctrl+K (Windows).
@@ -27,7 +26,7 @@ export function SearchDialog() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<ArticleWithAuthor[]>([]);
+  const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -89,7 +88,7 @@ export function SearchDialog() {
         );
         const json = (await res.json()) as {
           success: boolean;
-          data?: ArticleWithAuthor[];
+          data?: SearchResult[];
         };
 
         if (json.success && json.data) {
@@ -124,7 +123,7 @@ export function SearchDialog() {
       const article = results[activeIndex];
       if (article) {
         setOpen(false);
-        router.push(`/articles/${article.slug}`);
+        router.push(article.href);
       }
     }
   }
@@ -150,7 +149,7 @@ export function SearchDialog() {
           <VisuallyHidden.Root>
             <Dialog.Title>Search articles</Dialog.Title>
             <Dialog.Description>
-              Type to search across all published articles
+              Type to search across published articles and Problem of the Week solutions
             </Dialog.Description>
           </VisuallyHidden.Root>
 
@@ -163,11 +162,11 @@ export function SearchDialog() {
                 type="text"
                 value={query}
                 onChange={(e) => handleSearch(e.target.value)}
-                placeholder="Search articles..."
+                placeholder="Search articles and POW solutions..."
                 className="flex-1 bg-transparent text-paper py-4 focus:outline-none placeholder:text-muted font-body"
                 autoComplete="off"
                 autoFocus
-                aria-label="Search articles"
+                aria-label="Search articles and POW solutions"
                 role="combobox"
                 aria-controls="search-results-listbox"
                 aria-expanded={results.length > 0}
@@ -204,16 +203,16 @@ export function SearchDialog() {
               {/* No results */}
               {!loading && query.length >= 2 && results.length === 0 && (
                 <div className="px-4 py-8 text-center text-muted text-sm">
-                  No articles found for &quot;{query}&quot;
+                  No results found for &quot;{query}&quot;
                 </div>
               )}
 
               {/* Results list */}
-              {results.map((article, idx) => (
+              {results.map((result, idx) => (
                 <Link
-                  key={article.id}
+                  key={`${result.resultType}-${result.id}`}
                   id={`search-result-${idx}`}
-                  href={`/articles/${article.slug}`}
+                  href={result.href}
                   data-search-item
                   role="option"
                   aria-selected={idx === activeIndex}
@@ -227,24 +226,46 @@ export function SearchDialog() {
                   onClick={() => setOpen(false)}
                 >
                   <div className="flex items-center gap-2 mb-1">
-                    <Badge
-                      category={article.category as Category}
-                      size="sm"
-                    >
-                      {article.category}
-                    </Badge>
-                    {article.publishedAt && (
+                    {result.resultType === "article" ? (
+                      <Badge
+                        category={result.category as Category}
+                        size="sm"
+                      >
+                        {result.category}
+                      </Badge>
+                    ) : (
+                      <>
+                        <Badge size="sm">POW</Badge>
+                        <Badge size="sm">{result.publicId}</Badge>
+                        <Badge size="sm">{result.difficulty}</Badge>
+                      </>
+                    )}
+                    {result.publishedAt && (
                       <span className="text-xs text-muted font-mono">
-                        {formatDate(article.publishedAt)}
+                        {formatDate(result.publishedAt)}
                       </span>
                     )}
                   </div>
                   <h4 className="text-paper font-display font-semibold text-sm">
-                    {article.title}
+                    {result.title}
                   </h4>
+                  {"subtitle" in result && result.subtitle && (
+                    <p className="text-gold-light/80 text-xs mt-1 italic">
+                      {result.subtitle}
+                    </p>
+                  )}
                   <p className="text-muted text-xs mt-1 line-clamp-1">
-                    {article.excerpt}
+                    {result.excerpt}
                   </p>
+                  {result.resultType === "article" ? (
+                    <p className="text-[11px] text-muted/80 mt-2 font-mono">
+                      Article by {result.authorName}
+                    </p>
+                  ) : result.topic ? (
+                    <p className="text-[11px] text-muted/80 mt-2 font-mono">
+                      Topic {result.topic}
+                    </p>
+                  ) : null}
                 </Link>
               ))}
             </div>

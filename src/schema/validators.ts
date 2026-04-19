@@ -57,6 +57,13 @@ export const searchRequestSchema = z.object({
   limit: z.coerce.number().int().min(1).max(50).default(20),
 });
 
+export const problemSubmissionRequestSchema = z.object({
+  name: z.string().trim().min(1, "Name is required").max(200),
+  email: z.string().trim().email("Please enter a valid email address"),
+  solution: z.string().trim().min(20, "Solution is too short").max(50000),
+  problemNumber: z.number().int().positive("Problem number is required"),
+});
+
 export const articleQuerySchema = z.object({
   category: z.enum(["history", "research", "applied", "ai-ml", "essay", "news"]).optional(),
   tag: z.string().optional(),

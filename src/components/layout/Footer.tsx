@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useState } from "react";
 import { Logo } from "@/components/brand/Logo";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
-import { subscribeAction } from "@/actions/subscribe";
 import {
   FOOTER_LINKS,
   TWITTER_URL,
@@ -14,34 +13,55 @@ import {
   LINKEDIN_URL,
 } from "@/lib/constants";
 import { useCookieConsent } from "@/components/cookie/CookieConsentProvider";
-import type { ApiResponse, Subscriber } from "@/schema/types";
-
-const initialState: ApiResponse<Subscriber> = { success: false };
 
 /**
  * 4-column site footer.
- * Col 1: Logo + tagline + social icons (YouTube, LinkedIn, X, GitHub)
+ * Col 1: Logo + tagline + social icons
  * Col 2: Publication links
  * Col 3: Topic category links
  * Col 4: Newsletter mini-signup
- * Bottom bar: copyright + legal links
  */
 export function Footer() {
   const currentYear = new Date().getFullYear();
   const { openPreferences } = useCookieConsent();
+  const [email, setEmail] = useState("");
+  const [isPending, setIsPending] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const [state, formAction, isPending] = useActionState(
-    async (_prev: ApiResponse<Subscriber>, formData: FormData) => {
-      return subscribeAction(formData);
-    },
-    initialState
-  );
+  async function handleSubscribe(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError(null);
+    setIsPending(true);
+
+    try {
+      const response = await fetch("/api/subscribe", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const payload = (await response.json()) as { success?: boolean; error?: string };
+      if (!response.ok || !payload.success) {
+        setError(payload.error ?? "Subscription failed");
+        return;
+      }
+
+      setIsSuccess(true);
+      setEmail("");
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setIsPending(false);
+    }
+  }
 
   return (
     <footer className="bg-ink-2 border-t border-gold/[0.18] no-print">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12">
-          {/* Col 1: Brand */}
           <div className="space-y-4">
             <div className="flex items-center gap-2.5">
               <Logo size="sm" />
@@ -49,11 +69,8 @@ export function Footer() {
                 Math<span className="text-gold">Lumen</span>
               </span>
             </div>
-            <p className="text-muted text-sm leading-relaxed">
-              Illuminating Mathematics
-            </p>
+            <p className="text-muted text-sm leading-relaxed">Illuminating Mathematics</p>
             <div className="flex items-center gap-3 pt-2">
-              {/* YouTube */}
               <a
                 href={YOUTUBE_URL}
                 target="_blank"
@@ -65,7 +82,6 @@ export function Footer() {
                   <path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
                 </svg>
               </a>
-              {/* LinkedIn */}
               <a
                 href={LINKEDIN_URL}
                 target="_blank"
@@ -77,7 +93,6 @@ export function Footer() {
                   <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
                 </svg>
               </a>
-              {/* X (Twitter) */}
               <a
                 href={TWITTER_URL}
                 target="_blank"
@@ -89,7 +104,6 @@ export function Footer() {
                   <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                 </svg>
               </a>
-              {/* GitHub */}
               <a
                 href={GITHUB_URL}
                 target="_blank"
@@ -104,7 +118,6 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Col 2: Publication + Tools */}
           <div>
             <h3 className="font-display text-sm font-semibold text-gold-light uppercase tracking-wider mb-4">
               Publication
@@ -139,7 +152,6 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Col 3: Topics */}
           <div>
             <h3 className="font-display text-sm font-semibold text-gold-light uppercase tracking-wider mb-4">
               Topics
@@ -158,15 +170,14 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Col 4: Newsletter mini-signup */}
           <div>
             <h3 className="font-display text-sm font-semibold text-gold-light uppercase tracking-wider mb-4">
               Newsletter
             </h3>
-            {state.success ? (
+            {isSuccess ? (
               <p className="text-sm text-gold-light">You&apos;re subscribed!</p>
             ) : (
-              <form action={formAction} className="space-y-3">
+              <form onSubmit={handleSubscribe} className="space-y-3" noValidate>
                 <Input
                   type="email"
                   id="footer-newsletter-email"
@@ -176,6 +187,11 @@ export function Footer() {
                   required
                   aria-label="Email address for newsletter"
                   disabled={isPending}
+                  value={email}
+                  onChange={(event) => {
+                    setEmail(event.target.value);
+                    setError(null);
+                  }}
                 />
                 <Button
                   type="submit"
@@ -186,25 +202,20 @@ export function Footer() {
                 >
                   Subscribe
                 </Button>
-                {state.error && (
-                  <p className="text-xs text-red-400">{state.error}</p>
-                )}
+                {error && <p className="text-xs text-red-400">{error}</p>}
               </form>
             )}
           </div>
         </div>
 
-        {/* Bottom bar */}
         <div className="mt-12 pt-8 border-t border-gold/[0.18] flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-muted">
-            &copy; {currentYear} MathLumen. All rights reserved.
-          </p>
+          <p className="text-xs text-muted">&copy; {currentYear} MathLumen. All rights reserved.</p>
           <div className="flex items-center gap-1 text-xs text-muted">
             <Link href="/privacy" className="px-2 py-2 hover:text-paper transition-colors duration-200">
               Privacy
             </Link>
             <span className="text-gold/20">&middot;</span>
-            <Link href="/about" className="px-2 py-2 hover:text-paper transition-colors duration-200">
+            <Link href="/terms" className="px-2 py-2 hover:text-paper transition-colors duration-200">
               Terms
             </Link>
             <span className="text-gold/20">&middot;</span>

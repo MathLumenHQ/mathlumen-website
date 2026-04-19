@@ -1,10 +1,15 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { z } from "zod";
 import { createClient } from "@supabase/supabase-js";
 import { getResendClient, FROM_ADDRESS, buildNewsletterHtml } from "@/lib/newsletter";
 import { SITE_URL } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { newsletterSends } from "@/schema/tables";
+import {
+  buildJsonResponse,
+  enforceRateLimit,
+  enforceSameOrigin,
+} from "@/lib/request-security";
 
 const sendRequestSchema = z.object({
   subject: z.string().min(1).max(200),
@@ -22,30 +27,38 @@ const sendRequestSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  // ── Auth ────────────────────────────────────────────────────────────────
+  const blockedByOrigin = enforceSameOrigin(request);
+  if (blockedByOrigin) {
+    return blockedByOrigin;
+  }
+
+  const blockedByRateLimit = enforceRateLimit(request, "newsletter-send", 5, 60 * 60 * 1000);
+  if (blockedByRateLimit) {
+    return blockedByRateLimit;
+  }
+
   const secret = process.env.NEWSLETTER_SECRET;
   if (!secret) {
-    return NextResponse.json({ error: "Newsletter not configured" }, { status: 503 });
+    return buildJsonResponse({ error: "Newsletter not configured" }, { status: 503 });
   }
 
   const authHeader = request.headers.get("Authorization");
   if (authHeader !== `Bearer ${secret}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return buildJsonResponse({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // ── Parse body ──────────────────────────────────────────────────────────
   const body = await request.json().catch(() => null);
   const parsed = sendRequestSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 });
+    return buildJsonResponse({ error: parsed.error.flatten() }, { status: 422 });
   }
+
   const { subject, previewText, article } = parsed.data;
 
-  // ── Fetch active subscribers via service role ───────────────────────────
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!supabaseUrl || !serviceKey) {
-    return NextResponse.json({ error: "Supabase service role not configured" }, { status: 503 });
+    return buildJsonResponse({ error: "Supabase service role not configured" }, { status: 503 });
   }
 
   const supabase = createClient(supabaseUrl, serviceKey);
@@ -56,20 +69,22 @@ export async function POST(request: NextRequest) {
     .eq("confirmed", true);
 
   if (subsError) {
-    return NextResponse.json({ error: "Failed to load subscribers", detail: subsError.message }, { status: 500 });
+    return buildJsonResponse(
+      { error: "Failed to load subscribers", detail: subsError.message },
+      { status: 500 }
+    );
   }
 
   if (!subs || subs.length === 0) {
-    return NextResponse.json({ sent: 0, message: "No active subscribers" });
+    return buildJsonResponse({ sent: 0, message: "No active subscribers" });
   }
 
-  // ── Send in batches of 50 (Resend batch limit) ──────────────────────────
-  const BATCH_SIZE = 50;
+  const batchSize = 50;
   let sentCount = 0;
   const errors: string[] = [];
 
-  for (let i = 0; i < subs.length; i += BATCH_SIZE) {
-    const batch = subs.slice(i, i + BATCH_SIZE);
+  for (let i = 0; i < subs.length; i += batchSize) {
+    const batch = subs.slice(i, i + batchSize);
 
     const emails = batch.map((sub) => {
       const unsubscribeUrl = `${SITE_URL}/api/unsubscribe?token=${sub.unsubscribe_token}`;
@@ -89,13 +104,12 @@ export async function POST(request: NextRequest) {
 
     const { data: batchResult, error: batchError } = await getResendClient().batch.send(emails);
     if (batchError) {
-      errors.push(`Batch ${i / BATCH_SIZE + 1}: ${batchError.message}`);
+      errors.push(`Batch ${i / batchSize + 1}: ${batchError.message}`);
     } else {
       sentCount += batchResult?.data?.length ?? batch.length;
     }
   }
 
-  // ── Log the send ────────────────────────────────────────────────────────
   await db.insert(newsletterSends).values({
     subject,
     previewText: previewText ?? null,
@@ -104,7 +118,7 @@ export async function POST(request: NextRequest) {
     status: errors.length > 0 ? "partial" : "sent",
   });
 
-  return NextResponse.json({
+  return buildJsonResponse({
     sent: sentCount,
     total: subs.length,
     errors: errors.length > 0 ? errors : undefined,

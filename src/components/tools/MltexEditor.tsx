@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { createScrollSyncHandlers } from "@/lib/mltex/scroll-sync";
 import { exportToPdf } from "@/lib/mltex/export-pdf";
@@ -508,7 +508,17 @@ export function MltexEditor() {
   const [showSymbols, setShowSymbols] = useState(false);
 
   // Feature 1 — Scroll sync
-  const [syncEnabled, setSyncEnabled] = useState(false);
+  const [syncEnabled, setSyncEnabled] = useState(() => {
+    if (typeof window === "undefined") {
+      return false;
+    }
+
+    try {
+      return localStorage.getItem("mathlumen-mltex-sync-scroll") === "true";
+    } catch {
+      return false;
+    }
+  });
 
   // Feature 2 — PDF export
   const [exportState, setExportState] = useState<"idle" | "exporting" | "error">("idle");
@@ -517,7 +527,13 @@ export function MltexEditor() {
   const [showSearch, setShowSearch] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [replaceTerm, setReplaceTerm] = useState("");
-  const [matchCount, setMatchCount] = useState(0);
+  const matchCount = useMemo(() => {
+    if (!searchTerm) {
+      return 0;
+    }
+
+    return content.split(searchTerm).length - 1;
+  }, [content, searchTerm]);
 
   // Feature C — IndexedDB save status
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
@@ -719,11 +735,6 @@ export function MltexEditor() {
 
   /* ─── Feature B: match count ─────────────────────────────────────────── */
 
-  useEffect(() => {
-    if (!searchTerm) { setMatchCount(0); return; }
-    setMatchCount(content.split(searchTerm).length - 1);
-  }, [searchTerm, content]);
-
   /* ─── Feature C: IndexedDB helpers ──────────────────────────────────── */
 
   const DB_NAME = "MLTeXDB";
@@ -801,14 +812,6 @@ export function MltexEditor() {
   }, [content]);
 
   /* ─── Feature 1: load scroll sync preference from localStorage ───────── */
-
-  useEffect(() => {
-    try {
-      if (localStorage.getItem("mathlumen-mltex-sync-scroll") === "true") {
-        setSyncEnabled(true);
-      }
-    } catch {}
-  }, []);
 
   /* ─── Feature 1: scroll sync listeners ──────────────────────────────── */
 
