@@ -189,7 +189,7 @@ export default async function ProblemOfTheWeekPage() {
       {/* ── Archive link ───────────────────────────────────────────── */}
       <div className="mt-8 pt-6 border-t border-gold/[0.12]">
         <Link
-          href="/problem-of-the-week/archive"
+          href="/pow/archive"
           className="font-mono text-xs text-gold/60 hover:text-gold transition-colors duration-200 uppercase tracking-[0.15em]"
         >
           View all past problems →
