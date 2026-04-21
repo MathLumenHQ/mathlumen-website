@@ -26,21 +26,23 @@ export async function applyRateLimit({
 }: RateLimitOptions): Promise<RateLimitResult> {
   const now = new Date();
   const resetAt = new Date(now.getTime() + windowMs);
+  const nowIso = now.toISOString();
+  const resetAtIso = resetAt.toISOString();
 
   const result = await db.execute(sql<RateLimitRow>`
     insert into request_rate_limits ("key", "count", "reset_at", "updated_at")
-    values (${key}, 1, ${resetAt}, ${now})
+    values (${key}, 1, ${resetAtIso}, ${nowIso})
     on conflict ("key") do update
     set
       "count" = case
-        when request_rate_limits.reset_at <= ${now} then 1
+        when request_rate_limits.reset_at <= ${nowIso} then 1
         else request_rate_limits.count + 1
       end,
       "reset_at" = case
-        when request_rate_limits.reset_at <= ${now} then ${resetAt}
+        when request_rate_limits.reset_at <= ${nowIso} then ${resetAtIso}
         else request_rate_limits.reset_at
       end,
-      "updated_at" = ${now}
+      "updated_at" = ${nowIso}
     returning
       "count",
       "reset_at" as "resetAt"

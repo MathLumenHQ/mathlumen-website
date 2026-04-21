@@ -20,8 +20,26 @@ function setRateLimitHeaders(response: NextResponse, limit: number, remaining: n
   response.headers.set("Cache-Control", "no-store");
 }
 
+function serializeDates<T>(value: T): T {
+  if (value instanceof Date) {
+    return value.toISOString() as T;
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => serializeDates(item)) as T;
+  }
+
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, entry]) => [key, serializeDates(entry)])
+    ) as T;
+  }
+
+  return value;
+}
+
 export function buildJsonResponse(body: unknown, init?: ResponseInit): NextResponse {
-  const response = NextResponse.json(body, init);
+  const response = NextResponse.json(serializeDates(body), init);
   response.headers.set("Cache-Control", "no-store");
   return response;
 }
