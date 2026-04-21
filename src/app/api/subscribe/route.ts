@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSubscriber, checkSubscriberExists } from "@/lib/queries/subscribers";
+import { env } from "@/lib/env";
 import { subscribeRequestSchema } from "@/schema/validators";
 import type { ApiResponse, Subscriber } from "@/schema/types";
 import {
   buildJsonResponse,
   enforceRateLimit,
-  enforceSameOrigin,
 } from "@/lib/request-security";
 
 /**
@@ -15,19 +15,34 @@ import {
 export async function POST(
   request: NextRequest
 ): Promise<NextResponse<ApiResponse<Subscriber>>> {
-  const blockedByOrigin = enforceSameOrigin(request);
-  if (blockedByOrigin) {
-    return blockedByOrigin as NextResponse<ApiResponse<Subscriber>>;
+  const authHeader = request.headers.get("Authorization");
+  const isInternalAttempt = authHeader?.startsWith("Bearer ") ?? false;
+  const bearerToken =
+    isInternalAttempt && authHeader
+      ? authHeader.slice("Bearer ".length).trim()
+      : null;
+  const isValidInternalRequest =
+    Boolean(bearerToken) &&
+    Boolean(env.NEWSLETTER_SECRET) &&
+    bearerToken === env.NEWSLETTER_SECRET;
+
+  if (isInternalAttempt && !isValidInternalRequest) {
+    return buildJsonResponse(
+      { success: false, error: "Forbidden" },
+      { status: 403 }
+    ) as NextResponse<ApiResponse<Subscriber>>;
   }
 
-  const blockedByRateLimit = await enforceRateLimit(
-    request,
-    "subscribe",
-    8,
-    15 * 60 * 1000
-  );
-  if (blockedByRateLimit) {
-    return blockedByRateLimit as NextResponse<ApiResponse<Subscriber>>;
+  if (!isValidInternalRequest) {
+    const blockedByRateLimit = await enforceRateLimit(
+      request,
+      "subscribe",
+      8,
+      15 * 60 * 1000
+    );
+    if (blockedByRateLimit) {
+      return blockedByRateLimit as NextResponse<ApiResponse<Subscriber>>;
+    }
   }
 
   try {
