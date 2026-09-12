@@ -1,0 +1,119 @@
+---
+title: "Can Chess Be Solved? How Close Are We to Knowing the Perfect Game in 2026?"
+subtitle: "Superhuman engines have mastered practical chess. Mathematics has not yet proven what perfect chess is."
+slug: can-chess-be-solved
+category: research
+excerpt: "Stockfish and AlphaZero have mastered practical chess, but its true value under perfect play remains formally unproven — a 1981 complexity result helps explain why brute force can't close the gap."
+publishedAt: "2026-08-18"
+readTimeMinutes: 11
+tags: [game-theory, computational-complexity, exptime-complete, endgame-tablebases, artificial-intelligence]
+coverImageUrl: "https://ik.imagekit.io/netrv2whci/mathlumen/article-covers/can-chess-be-solved.png"
+---
+
+---
+ 
+Chess engines have never been stronger. Stockfish 18 arrived in January 2026 already unbeatable by any human at standard time controls; its successor, Stockfish 19, followed in September with a further Elo gain over Stockfish 18. Endgame tablebases now cover every legal position with seven pieces or fewer, and a large share of eight-piece endgames besides. And yet, measured against the one question a mathematician actually cares about — is the starting position a win for White, a win for Black, or a draw under perfect play? — chess has not moved. That question is exactly as open today as it was when Deep Blue defeated Garry Kasparov in 1997.
+ 
+This is not a contradiction so much as a category error the chess world rarely bothers to correct. Playing a game extremely well and proving its game-theoretic value from the starting position are different achievements, governed by different fields — the first by search algorithms and machine learning, the second by combinatorial game theory and computational complexity. An engine's evaluation of `+0.3` or `0.00` is a search-and-learning system's best current estimate; it is not a certificate that a position is actually better for White, or actually drawn, under perfect play by both sides. Chess sits in an unusual position: a game whose practical form has been computationally dominated, but whose mathematical core remains unsolved.
+ 
+## What "Solving" a Game Actually Means
+ 
+Game theorists distinguish three levels of solution, a hierarchy formalized by Victor Allis in his 1994 doctoral thesis on searching for solutions in games and artificial intelligence.
+ 
+A game is **ultra-weakly solved** when the game-theoretic value of the starting position — win, loss, or draw for the player to move — is known, even if the proof gives no way to actually achieve that result. It is **weakly solved** when a concrete strategy exists that achieves this value from the start, using reasonable computational resources. It is **strongly solved** when the value of every legal position is known, typically by exhaustively computing a database of outcomes.
+ 
+Checkers is the benchmark case. In 2007, a team led by Jonathan Schaeffer at the University of Alberta announced in *Science* that checkers is weakly solved: perfect play by both sides leads to a draw. Checkers has roughly $5 \times 10^{20}$ possible positions — by the team's own estimate, about a million times the complexity of Connect Four, the previous benchmark for a solved popular game. The proof combined a complete endgame database of $3.9 \times 10^{13}$ positions (every position with ten or fewer pieces) with a forward proof-tree search connecting the relevant lines of play from the opening to that solved endgame layer. The project — begun in 1989 — took nearly two decades of near-continuous computation.
+ 
+Chess has never reached even the weakest of these three tiers. No one has proven what the starting position's value is, let alone found a strategy to force it.
+ 
+## Shannon's Number and the Scale of the Problem
+ 
+The reason chess resists the checkers treatment is scale. In 1950, Claude Shannon — writing the paper that founded the field of computer chess — gave a now-famous lower bound on the game's complexity. Using a conservative estimate of about $10^3$ reasonable move-pairs at each stage of a 40-move game, Shannon arrived at a game-tree complexity of
+ 
+$$
+10^{120}
+$$
+ 
+now known as the Shannon number — not a count of every legal chess game, but an order-of-magnitude estimate of the size of the game tree under his simplified branching model. He separately estimated the number of distinct legal positions at roughly $10^{43}$. A modern, more refined estimate of that same game-tree complexity, using an average branching factor of 35 legal moves and an average game length of 80 ply, gives
+ 
+$$
+35^{80} \approx 10^{123}.
+$$
+ 
+A short calculation shows the same order of magnitude:
+ 
+```python
+# Order-of-magnitude estimate of chess's game-tree complexity
+branching_factor = 35   # average legal moves per position
+game_length_ply = 80    # average game length, in half-moves
+ 
+game_tree_complexity = branching_factor ** game_length_ply
+print(f"{game_tree_complexity:.2e}")   # ≈ 1.8e+123
+```
+ 
+Game-tree complexity should not be confused with state-space complexity — the number of *distinct positions*, as opposed to the number of *move sequences* that can reach them. The state-space figure is commonly cited at roughly $10^{46}$, but that number is a rough order-of-magnitude bound rather than the best available estimate. A more careful statistical approach, run by John Tromp and Peter Österlund between 2021 and 2025 using large random samples individually checked for legality, puts the true count closer to $4.8 \times 10^{44}$ with a tight confidence interval — over a hundred times smaller than the commonly quoted $10^{46}$, and a useful reminder that "commonly cited" and "most rigorously estimated" are not always the same figure.
+ 
+To put $10^{120}$ in perspective: physicists estimate the observable universe contains roughly $10^{80}$ atoms. The number of possible chess games exceeds the number of atoms in the observable universe by a factor of $10^{40}$ — a gap large enough that no foreseeable increase in computing power makes exhaustive, brute-force enumeration of the full game tree practical. This is why Shannon's number is invoked less as a curiosity than as a genuine barrier: it makes straightforward exhaustive search fantastically impractical, the same way thermodynamic limits rule out certain physical processes regardless of engineering cleverness — though, as with any argument about future technology, it does not prove that chess can never be solved by some fundamentally different, non-exhaustive method.
+ 
+## From Deep Blue to Stockfish 19 and AlphaZero
+ 
+Shannon's 1950 paper did more than estimate a number — it proposed the minimax search-and-evaluate framework that computer chess still runs on today, even as the components underneath have changed almost beyond recognition.
+ 
+The first widely publicized test of that framework against the best human player came in 1997, when IBM's Deep Blue defeated the reigning world champion Garry Kasparov 3.5–2.5 in a six-game rematch, having lost the first encounter 4–2 the previous year. Deep Blue relied on massively parallel, purpose-built hardware searching up to 200 million positions per second, combined with a hand-tuned evaluation function and search extensions supplying the chess-specific knowledge that raw search alone could not provide.
+ 
+The following decades replaced brute-force search with progressively smarter evaluation. Stockfish, an open-source engine first released in 2008, became the dominant program of the 2010s through refined alpha-beta search, and in 2020 adopted NNUE — a compact neural network trained to evaluate positions far faster than earlier hand-crafted formulas — starting with Stockfish 12. Stockfish 18, released in January 2026, combined NNUE evaluation with a new "Threat Inputs" architecture and could search over 500 million positions per second on high-end hardware, an up-to-46-Elo gain over its predecessor. Its successor, Stockfish 19, followed in September 2026 with a further gain of up to 44 Elo, a revised neural network, and improved training techniques — a reminder that whichever specific version is current by the time this is read, the distinction below does not change.
+ 
+A different paradigm arrived in 2017, when DeepMind's AlphaZero learned chess purely through self-play, given nothing but the rules. By DeepMind's own account, AlphaZero first began outperforming Stockfish after about four hours of self-play training, and the version behind its best-known result — a 1,000-game match reported in the team's 2018 paper in *Science*, winning 155 games and losing 6, with the remainder drawn — had trained for roughly nine hours. (A widely quoted figure claiming AlphaZero reached superhuman play "within 24 hours" describes its combined debut across chess, shogi, and Go in DeepMind's original 2017 preprint, not the chess-specific training behind this later, larger match.) AlphaZero's success demonstrated that reinforcement learning could rediscover much of classical opening theory independently, but it is worth being precise about what this did and did not show: AlphaZero produced extraordinarily strong *play*, not a proof of chess's game-theoretic value. Its evaluations, like Stockfish's, are estimates — refined by search and learning, but not certificates of optimality.
+ 
+## Why Generalized Chess Is EXPTIME-Complete
+ 
+Shannon's number explains why exhaustively searching the actual $8 \times 8$ board is infeasible. A deeper result from theoretical computer science adds a structural explanation for that same difficulty — though, as its authors stressed, it says less about the standard board than it might first appear to.
+ 
+In 1981, Aviezri Fraenkel and David Lichtenstein proved that a natural generalization of chess to an $n \times n$ board — with the number of pawns, rooks, bishops, and queens each growing with $n$, and one king per side — is **EXPTIME-complete**. Their proof works by reduction: they showed that a known EXPTIME-complete two-player Boolean formula game, introduced by Larry Stockmeyer and Ashok Chandra in 1979, can be simulated exactly by a position of generalized chess.
+ 
+EXPTIME-complete problems sit above the more familiar complexity classes $P$ and $NP$ in the hierarchy
+ 
+$$
+P \subseteq NP \subseteq PSPACE \subseteq EXPTIME,
+$$
+ 
+exactly as Fraenkel and Lichtenstein state it in their own paper. Of these inclusions, only one is known to be strict: $P \neq EXPTIME$, a consequence of the time hierarchy theorem, which shows unconditionally that strictly more computation time lets a machine decide strictly more problems. (Whether $PSPACE \neq EXPTIME$ remains, as the original paper itself notes, an open conjecture.) Because every problem in EXPTIME reduces to an EXPTIME-complete problem in polynomial time, a polynomial-time algorithm for generalized chess would force all of EXPTIME to collapse into $P$ — contradicting $P \neq EXPTIME$, the one separation among this chain that is actually proven (the others remain open, not disproven). So it is established, not merely conjectured, that generalized chess admits no polynomial-time algorithm — a stronger guarantee than NP-completeness offers, where even a fast way to *verify* a proposed solution says nothing about whether a fast way to *find* one exists.
+ 
+Fraenkel and Lichtenstein were explicit that this result says very little about the ordinary $8 \times 8$ game. Their reduction produces positions that, by their own description, do not resemble typical chess endgames, and they never established that such positions are even reachable from a normal starting position by legal play. What the theorem shows is that a natural family of chess-like games becomes provably intractable as board size grows — evidence that this kind of game structure *can* encode exponentially hard problems, not a proof that the fixed $8 \times 8$ game itself resists every conceivable algorithm. Complexity theory and Shannon's raw counting argument point in the same direction — toward deep skepticism about any simple, generalizable solution — without either one closing the question for the fixed board on its own.
+ 
+## What Has Actually Been Solved: Endgame Tablebases
+ 
+Set against this uncertainty, one part of chess genuinely has been solved with complete rigor: the endgame.
+ 
+An endgame tablebase is a precomputed database recording the exact outcome — win, loss, or draw — for every legal position with a small number of pieces remaining. Tablebases are built by **retrograde analysis**: rather than searching forward from a position, the algorithm starts from every checkmated and stalemated position and works backward, propagating game-theoretic values toward positions with more pieces on the board.
+ 
+The scale of these databases has grown steadily, though the popular history is often compressed inaccurately. Ken Thompson built the first practical tablebase in 1977 — a four-piece king-and-queen-versus-king-and-rook database, used in an exhibition match against grandmaster Walter Browne — and extended the work to complete four- and five-piece coverage over the following years. Six pieces arrived in two stages: Lewis Stiller produced the first six-piece calculation in 1991, using a 65,536-processor parallel machine to find a 262-move forced win in rook-and-bishop versus two knights, and Eugene Nalimov's complete six-piece set, covering every six-piece configuration, followed in 2005 at roughly 1.2 terabytes.
+ 
+Seven pieces followed in two independent efforts: the Lomonosov project, completed in 2012 on a Moscow State University supercomputer at roughly 140 terabytes, and the fully complete Syzygy set, finished in 2018 after five months of computation and covering configurations — including certain pawnless endings — that the Lomonosov set had skipped. There are exactly $423{,}836{,}835{,}667{,}331$ unique legal seven-piece positions; Syzygy stores exact information for all of them in about 18.4 terabytes, roughly 0.35 bits per position. Among the results this analysis turned up, two figures are worth distinguishing carefully, since they are often run together. In 2006, Marc Bourzutschky and Yakov Konoval found a seven-piece position (queen and knight versus rook, bishop, and knight) with a distance-to-conversion of 517 moves — the number of moves needed to force a capture or pawn promotion that changes the material balance, which need not be a checkmate itself. Separately, the Lomonosov project's 2012 analysis reported a forced mate of 549 moves in a related position, measured by distance-to-mate. Bourzutschky has pointed out that this 549-move mate count is artificially inflated by an early pawn under-promotion that resets little of the real difficulty; the 517-move conversion figure is generally treated as the more meaningful measure of the position's actual complexity. Either way, both are tablebase-theoretic results, not practical ones: under the FIDE Laws of Chess, a player may *claim* a draw after 50 moves by each side without a capture or pawn move, and the game is drawn *automatically* after 75 such moves regardless of any claim — so an actual tournament game would end in a draw long before either record could be realized on the board.
+ 
+Eight pieces remain incomplete, but the frontier has moved. In February 2026, Lichess made a large partial eight-piece tablebase publicly available, built from Marc Bourzutschky's tables and covering every eight-piece position with at least one pair of opposing pawns on the same file — accounting for roughly half of the eight-piece endgames that arise in practical play, by Lichess's own estimate — at a published size of 63 tebibytes. Separately, targeted calculations restricted to pawnless eight-piece endgames have already turned up individual positions requiring 584 moves to force a decisive conversion. Full eight-piece coverage does not yet exist, and each additional piece multiplies the position count by roughly one to two orders of magnitude in this range, so the remaining gap is not simply a matter of buying more storage.
+ 
+This is the clearest illustration of the article's central distinction. Every legal position with seven or fewer pieces on the board now has an exact, verified outcome under the tablebase's defined rules and metric — the same standard of certainty the checkers proof achieved for that entire game, from its own starting position. What tablebases do not do is extend that certainty back to the full 32-piece game as it is actually played from the opening; the gap between a completely mapped endgame and a solved opening is not a matter of degree so much as of kind.
+ 
+## What Would It Take to Solve Chess?
+ 
+Closing this gap is not simply a matter of waiting for more computing power. The Fraenkel–Lichtenstein result shows that the same exhaustive, brute-force approach becomes provably intractable as it is scaled to arbitrarily large boards — a warning against expecting a simple, generalizable shortcut from that particular strategy, even though it proves nothing about whether some entirely different method could still work on the fixed $8 \times 8$ board.
+ 
+Plausible research directions exist, though none has been demonstrated at anything close to chess's scale. One is structural compression: exploiting symmetries, transpositions, and general principles to represent enormous classes of positions compactly, the way Syzygy's roughly 0.35-bits-per-position storage already compresses the seven-piece space far below its raw size. Another is automated theorem proving — using AI systems to propose candidate strategies or invariants that a separate, formal verification system then checks, rather than simply asking a larger search engine to look further ahead. Both are genuinely speculative research directions, not roadmaps with a known destination.
+ 
+It is worth being explicit about what is established and what is not. That chess resists brute-force search is established, by both Shannon's combinatorial argument and the Fraenkel–Lichtenstein complexity result, understood with the caveats above. That perfect play from the starting position most likely results in a draw is the near-universal expert conjecture, informed by decades of engine-versus-engine play at the highest level and by the sheer draw-heavy character of that play — but it remains an informed conjecture grounded in extensive analysis, not a mathematical theorem. Any specific date for when chess will be solved has no rigorous basis: computer chess's history has been shaped as much by algorithmic breakthroughs — NNUE, Monte Carlo tree search, whatever comes after Stockfish 19 — as by raw hardware growth, and there is no reliable model for predicting when, or whether, a breakthrough capable of closing a gap this size will arrive.
+ 
+Chess has reached a strange equilibrium as a result: a game in which machines have achieved overwhelming, superhuman practical strength, while its mathematical core — the value of the very first move — remains as open a question as it was when Shannon wrote it down in 1950.
+ 
+### Further Reading
+ 
+1. [Shannon, C. E. (1950). "Programming a Computer for Playing Chess." *Philosophical Magazine*, 41(314), 256–275.](https://www.computerhistory.org/chess/doc-431614f453dde/)
+2. [Allis, L. V. (1994). *Searching for Solutions in Games and Artificial Intelligence*. PhD thesis, Maastricht University.](https://cris.maastrichtuniversity.nl/en/publications/searching-for-solutions-in-games-and-artificial-intelligence/)
+3. [Fraenkel, A. S. & Lichtenstein, D. (1981). "Computing a Perfect Strategy for n × n Chess Requires Time Exponential in n." *J. Combin. Theory Ser. A*, 31, 199–214.](https://doi.org/10.1016/0097-3165(81)90016-9)
+4. [Schaeffer, J. et al. (2007). "Checkers Is Solved." *Science*, 317(5844), 1518–1522.](https://www.science.org/doi/10.1126/science.1144079)
+5. [Silver, D. et al. (2018). "A General Reinforcement Learning Algorithm That Masters Chess, Shogi, and Go Through Self-Play." *Science*, 362(6419), 1140–1144.](https://www.science.org/doi/10.1126/science.aar6404)
+6. [Lichess: 7-piece Syzygy tablebases are complete (2018).](https://lichess.org/@/lichess/blog/7-piece-syzygy-tablebases-are-complete/W3WeMyQA)
+7. [Lichess: Partial 8-piece tablebase available (2026).](https://lichess.org/@/Lichess/blog/op1-partial-8-piece-tablebase-available/1ptPBDpC)
+8. [Stockfish 18 release notes (2026).](https://stockfishchess.org/blog/2026/stockfish-18/)
+9. [Stockfish 19 release notes (2026).](https://stockfishchess.org/blog/2026/stockfish-19/)
+ 
