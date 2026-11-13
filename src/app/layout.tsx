@@ -36,10 +36,6 @@ const dmMono = DM_Mono({
   preload: true,
 });
 
-// Work around a Next.js 16 prerender bug hitting global error/static generation
-// on Windows builds. Individual pages still control their own revalidation.
-export const dynamic = "force-dynamic";
-
 export const metadata: Metadata = {
   ...createMetadata({
     title: SITE_NAME,

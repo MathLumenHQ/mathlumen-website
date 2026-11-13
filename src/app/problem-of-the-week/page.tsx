@@ -10,6 +10,8 @@ import { getPowIssueHref, getPublishedPowIssueBySlug } from "@/lib/queries/pow";
 import { SubmissionForm } from "./SubmissionForm";
 import type { Metadata } from "next";
 
+export const revalidate = 86400;
+
 export const metadata: Metadata = createMetadata({
   title: `Problem of the Week #${currentProblem.number}`,
   description: `Submit your solution to MathLumen Problem of the Week #${currentProblem.number}. Deadline: ${currentProblem.deadline}.`,

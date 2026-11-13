@@ -24,8 +24,7 @@ const DIFFICULTY_STYLES: Record<ProblemDifficulty, string> = {
 };
 
 /**
- * Server component — compiles the problem statement with KaTeX at request
- * time. Placed between Featured and Latest Articles on the homepage.
+ * Server component compiled during the homepage's static generation/ISR.
  */
 export async function ProblemOfTheWeek() {
   const { content } = await compileMDX({

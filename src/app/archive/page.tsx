@@ -6,6 +6,8 @@ import { SearchButton } from "@/components/article/SearchButton";
 import { createMetadata } from "@/lib/metadata";
 import type { Category } from "@/schema/types";
 
+export const revalidate = 86400;
+
 export const metadata = createMetadata({
   title: "Archive",
   description:

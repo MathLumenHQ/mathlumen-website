@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { getArticles } from "@/lib/queries/articles";
+import { getPublishedArticles } from "@/lib/queries/articles";
 import { ArticleCard } from "@/components/article/ArticleCard";
 import { CategoryFilter } from "@/components/article/CategoryFilter";
 import { NewsletterForm } from "@/components/forms/NewsletterForm";
@@ -10,11 +10,10 @@ import { Button } from "@/components/ui/Button";
 import { Separator } from "@/components/ui/Separator";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { ProblemOfTheWeek } from "@/components/ProblemOfTheWeek";
-import type { Category } from "@/schema/types";
+import type { ArticleWithAuthor, Category } from "@/schema/types";
 
-// Revalidate the homepage at most once per hour.
-// Next.js 16 ISR: when the timer fires with a stale value, it is clamped to 1ms internally.
-export const revalidate = 3600;
+// Revalidate the homepage at most once per day.
+export const revalidate = 86400;
 
 /* ═══════════════════════════════════════════════════════════════════════
    CONTENT PILLARS DATA
@@ -83,7 +82,14 @@ const CATEGORY_ROWS: { category: Category; label: string }[] = [
    PAGE COMPONENT
    ═══════════════════════════════════════════════════════════════════════ */
 
-export default function HomePage() {
+export default async function HomePage() {
+  // One bounded query supplies every article collection below during static
+  // generation/ISR. This replaces seven list+count query pairs per render.
+  const articles = await getPublishedArticles();
+  const featuredArticles = articles.filter((article) => article.featured).slice(0, 4);
+  const latestArticles = articles.slice(0, 6);
+  const latestNewsArticles = articles.filter((article) => article.category === "news").slice(0, 3);
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebSite",
@@ -254,7 +260,7 @@ export default function HomePage() {
         </div>
 
         <Suspense fallback={<FeaturedSkeleton />}>
-          <FeaturedArticles />
+          <FeaturedArticles articles={featuredArticles} />
         </Suspense>
       </section>
 
@@ -262,7 +268,7 @@ export default function HomePage() {
 
       {/* ── Section 3b: LATEST NEWS ──────────────────────────────────── */}
       <Suspense fallback={null}>
-        <LatestNewsSection />
+        <LatestNewsSection articles={latestNewsArticles} />
       </Suspense>
 
       {/* ── Section 3c: PROBLEM OF THE WEEK ─────────────────────────── */}
@@ -282,7 +288,7 @@ export default function HomePage() {
         </div>
 
         <Suspense fallback={<GridSkeleton count={6} />}>
-          <LatestArticles />
+          <LatestArticles articles={latestArticles} />
         </Suspense>
 
         <div className="mt-10 text-center">
@@ -360,7 +366,11 @@ export default function HomePage() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         {CATEGORY_ROWS.map((row) => (
           <Suspense key={row.category} fallback={<CategoryRowSkeleton label={row.label} />}>
-            <CategoryRow category={row.category} label={row.label} />
+            <CategoryRow
+              category={row.category}
+              label={row.label}
+              articles={articles.filter((article) => article.category === row.category).slice(0, 3)}
+            />
           </Suspense>
         ))}
       </section>
@@ -373,9 +383,7 @@ export default function HomePage() {
    ═══════════════════════════════════════════════════════════════════════ */
 
 /** Featured articles: 1 large (left 60%) + up to 3 sidebar (right 40%) */
-async function FeaturedArticles() {
-  const result = await getArticles({ featured: true, limit: 4 });
-  const articles = result.data;
+function FeaturedArticles({ articles }: { articles: ArticleWithAuthor[] }) {
 
   if (articles.length === 0) {
     return <FeaturedEmptyState />;
@@ -441,10 +449,8 @@ async function FeaturedArticles() {
 }
 
 /** Latest 6 articles for the category tab section */
-async function LatestArticles() {
-  const result = await getArticles({ limit: 6 });
-
-  if (result.data.length === 0) {
+function LatestArticles({ articles }: { articles: ArticleWithAuthor[] }) {
+  if (articles.length === 0) {
     return (
       <div className="text-center py-16">
         <p className="font-display text-xl text-muted italic mb-2">
@@ -462,7 +468,7 @@ async function LatestArticles() {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      {result.data.map((article) => (
+      {articles.map((article) => (
         <ArticleCard key={article.id} article={article} />
       ))}
     </div>
@@ -470,14 +476,8 @@ async function LatestArticles() {
 }
 
 /** Latest News — shows only when news articles exist */
-async function LatestNewsSection() {
-  let result;
-  try {
-    result = await getArticles({ category: "news", limit: 3, sort: "newest" });
-  } catch {
-    return null;
-  }
-  if (result.data.length === 0) return null;
+function LatestNewsSection({ articles }: { articles: ArticleWithAuthor[] }) {
+  if (articles.length === 0) return null;
 
   return (
     <>
@@ -498,7 +498,7 @@ async function LatestNewsSection() {
           </Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {result.data.map((article) => (
+          {articles.map((article) => (
             <ArticleCard key={article.id} article={article} />
           ))}
         </div>
@@ -508,16 +508,16 @@ async function LatestNewsSection() {
 }
 
 /** Category row — 3 articles from a single category */
-async function CategoryRow({
+function CategoryRow({
   category,
   label,
+  articles,
 }: {
   category: Category;
   label: string;
+  articles: ArticleWithAuthor[];
 }) {
-  const result = await getArticles({ category, limit: 3 });
-
-  if (result.data.length === 0) return null;
+  if (articles.length === 0) return null;
 
   return (
     <div className="mb-16 last:mb-0">
@@ -532,7 +532,7 @@ async function CategoryRow({
         </Link>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {result.data.map((article) => (
+        {articles.map((article) => (
           <ArticleCard key={article.id} article={article} />
         ))}
       </div>

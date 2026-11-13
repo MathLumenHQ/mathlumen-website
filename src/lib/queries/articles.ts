@@ -78,6 +78,33 @@ export async function getArticles(
 }
 
 /**
+ * Fetch published articles for static/ISR collection pages that only need a
+ * bounded list. Unlike getArticles(), this deliberately avoids a COUNT(*)
+ * query because those pages do not display pagination metadata.
+ */
+export async function getPublishedArticles(
+  limit: number = 1000
+): Promise<ArticleWithAuthor[]> {
+  try {
+    const result = await db
+      .select()
+      .from(articles)
+      .innerJoin(authors, eq(articles.authorId, authors.id))
+      .where(eq(articles.isPublished, true))
+      .orderBy(desc(articles.publishedAt), asc(articles.slug))
+      .limit(limit);
+
+    return result.map((row) => ({
+      ...row.articles,
+      author: row.authors,
+    }));
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    throw new Error(`Failed to fetch published articles: ${message}`);
+  }
+}
+
+/**
  * Fetch a single published article by its URL slug, including author data.
  */
 export async function getArticleBySlug(slug: string): Promise<ArticleWithAuthor | null> {

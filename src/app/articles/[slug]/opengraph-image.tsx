@@ -1,14 +1,21 @@
 import { ImageResponse } from "next/og";
-import { getArticleBySlug } from "@/lib/queries/articles";
+import { getArticleBySlug, getPublishedArticles } from "@/lib/queries/articles";
 import { formatDate } from "@/lib/utils";
 
 export const runtime = "nodejs";
+export const revalidate = 86400;
 export const alt = "Article preview";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 interface OGImageProps {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateStaticParams() {
+  // Fail loudly if the DB is unavailable; the previous deployment stays live.
+  const articles = await getPublishedArticles();
+  return articles.map((article) => ({ slug: article.slug }));
 }
 
 export default async function OGImage({ params }: OGImageProps) {

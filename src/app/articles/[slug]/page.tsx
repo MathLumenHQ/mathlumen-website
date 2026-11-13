@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
-import { getArticleBySlug } from "@/lib/queries/articles";
+import { getArticleBySlug, getPublishedArticles } from "@/lib/queries/articles";
 import { getPublishedPowIssueBySlug } from "@/lib/queries/pow";
 import { getArticleContent, getArticleRawBody } from "@/lib/mdx";
 import { createMetadata } from "@/lib/metadata";
@@ -26,6 +26,7 @@ import { ViewTracker } from "./ViewTracker";
 import { PowSolutionDownload } from "@/components/article/PowSolutionDownload";
 import type { Category } from "@/schema/types";
 import type { Metadata } from "next";
+import { cache } from "react";
 
 const CATEGORY_LABELS: Record<string, string> = {
   history: "History",
@@ -36,11 +37,27 @@ const CATEGORY_LABELS: Record<string, string> = {
   news: "News",
 };
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 export const dynamicParams = true;
+
+// React memoizes this lookup for a single server render, so generateMetadata()
+// and ArticlePage() do not query the same article twice.
+const getCachedArticleBySlug = cache(getArticleBySlug);
 
 interface ArticlePageProps {
   params: Promise<{ slug: string }>;
+}
+
+/**
+ * Pre-render all currently published article URLs. dynamicParams keeps the
+ * route available for newly published articles, which Next.js then caches
+ * according to the route's ISR interval.
+ * Database failures deliberately propagate so the build fails and Vercel keeps
+ * the previous deployment live instead of producing a partial static output.
+ */
+export async function generateStaticParams() {
+  const articles = await getPublishedArticles();
+  return articles.map((article) => ({ slug: article.slug }));
 }
 
 export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
@@ -56,7 +73,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
       });
     }
   }
-  const article = await getArticleBySlug(slug);
+  const article = await getCachedArticleBySlug(slug);
 
   if (!article) {
     return createMetadata({
@@ -83,7 +100,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       redirect(`/pow/${powIssue.publicId}`);
     }
   }
-  const article = await getArticleBySlug(slug);
+  const article = await getCachedArticleBySlug(slug);
 
   if (!article) {
     notFound();

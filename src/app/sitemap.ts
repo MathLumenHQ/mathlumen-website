@@ -4,6 +4,8 @@ import { getAllAuthors } from "@/lib/queries/authors";
 import { getPowIssueHref, getPublishedPowIssues } from "@/lib/queries/pow";
 import { SITE_URL, CATEGORIES } from "@/lib/constants";
 
+export const revalidate = 86400;
+
 /**
  * Generate a dynamic sitemap for search engine indexing.
  */

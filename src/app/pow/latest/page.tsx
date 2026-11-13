@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { createMetadata } from "@/lib/metadata";
 import { getLatestPublishedIssue, getPowIssueHref } from "@/lib/queries/pow";
 
+export const revalidate = 86400;
+
 export const metadata = createMetadata({
   title: "Latest Problem of the Week Solution",
   description:

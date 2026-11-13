@@ -4,6 +4,8 @@ import { getArticles } from "@/lib/queries/articles";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { createMetadata } from "@/lib/metadata";
 
+export const revalidate = 86400;
+
 export const metadata = createMetadata({
   title: "Authors",
   description:

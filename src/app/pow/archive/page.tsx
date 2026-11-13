@@ -3,6 +3,8 @@ import { getPowArchiveYears, getPublishedPowIssuesByYear } from "@/lib/queries/p
 import { PowArchiveYearSection } from "@/components/pow/PowArchiveYearSection";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 
+export const revalidate = 86400;
+
 export const metadata = createMetadata({
   title: "Problem of the Week Archive",
   description:
