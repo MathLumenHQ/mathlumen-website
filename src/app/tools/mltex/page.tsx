@@ -18,7 +18,7 @@ export default function MltexPage() {
           "@context": "https://schema.org",
           "@type": "WebApplication",
           name: "MLTeX",
-          url: "https://mathlumen.com/tools/mltex",
+          url: "https://www.mathlumen.com/tools/mltex",
           description:
             "MLTeX — free online math equation editor with real-time LaTeX preview powered by MathJax.",
           applicationCategory: "EducationalApplication",
@@ -32,7 +32,7 @@ export default function MltexPage() {
           creator: {
             "@type": "Organization",
             name: "MathLumen",
-            url: "https://mathlumen.com",
+            url: "https://www.mathlumen.com",
           },
         }}
       />

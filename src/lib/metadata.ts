@@ -8,7 +8,7 @@ interface CreateMetadataOptions {
   description: string;
   /** OpenGraph image URL */
   image?: string;
-  /** Page path (e.g., "/articles/euler-identity") */
+  /** Page path (e.g., "/articles/euler-identity"). Use "/" for the homepage. */
   path: string;
   /** OpenGraph type */
   type?: "website" | "article";
@@ -25,6 +25,9 @@ interface CreateMetadataOptions {
 /**
  * Create a complete Next.js Metadata object with OpenGraph, Twitter,
  * canonical URL, and RSS alternate link.
+ *
+ * `SITE_URL` (https://www.mathlumen.com) is the single source of truth for
+ * every absolute URL emitted here.
  */
 export function createMetadata({
   title,
@@ -39,6 +42,10 @@ export function createMetadata({
 }: CreateMetadataOptions): Metadata {
   const url = `${SITE_URL}${path}`;
   const ogImage = image ?? `${SITE_URL}/opengraph-image`;
+
+  // Social titles are not covered by the layout title template, so add the
+  // suffix here, but never twice (e.g. the homepage title is the site name).
+  const socialTitle = title.includes(SITE_NAME) ? title : `${title} | ${SITE_NAME}`;
 
   return {
     // The root layout owns the title template, so child titles must not
@@ -56,7 +63,7 @@ export function createMetadata({
       },
     },
     openGraph: {
-      title: `${title} | ${SITE_NAME}`,
+      title: socialTitle,
       description,
       url,
       siteName: SITE_NAME,
@@ -79,7 +86,7 @@ export function createMetadata({
     },
     twitter: {
       card: "summary_large_image",
-      title: `${title} | ${SITE_NAME}`,
+      title: socialTitle,
       description,
       images: [ogImage],
       creator: TWITTER_HANDLE,

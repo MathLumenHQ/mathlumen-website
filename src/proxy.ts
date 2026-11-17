@@ -5,8 +5,11 @@ export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // ── RSS redirects ─────────────────────────────────────────────────────
+  // Permanent (308) so crawlers and feed readers update the stored URL.
+  // Apex -> www and HTTP -> HTTPS are handled by Vercel's domain settings,
+  // deliberately not duplicated here to avoid conflicting redirect chains.
   if (pathname === "/feed" || pathname === "/rss") {
-    return NextResponse.redirect(new URL("/api/rss", request.url));
+    return NextResponse.redirect(new URL("/api/rss", request.url), 308);
   }
 
   // ── Security headers ──────────────────────────────────────────────────

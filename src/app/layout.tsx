@@ -7,8 +7,8 @@ import { CookieConsentProvider } from "@/components/cookie/CookieConsentProvider
 import { CookieConsentBanner } from "@/components/cookie/CookieConsentBanner";
 import { CookiePreferencesModal } from "@/components/cookie/CookiePreferencesModal";
 import { ProductionTelemetry } from "@/components/analytics/ProductionTelemetry";
-import { createMetadata } from "@/lib/metadata";
-import { SITE_NAME, SITE_DESCRIPTION } from "@/lib/constants";
+//import { createMetadata } from "@/lib/metadata";
+import { SITE_NAME, SITE_DESCRIPTION, SITE_URL, TWITTER_HANDLE } from "@/lib/constants";
 import "@/styles/globals.css";
 import "katex/dist/katex.min.css";
 
@@ -37,16 +37,12 @@ const dmMono = DM_Mono({
 });
 
 export const metadata: Metadata = {
-  ...createMetadata({
-    title: SITE_NAME,
-    description: SITE_DESCRIPTION,
-    path: "/",
-  }),
-  metadataBase: new URL("https://mathlumen.com"),
-  title: {
-    default: SITE_NAME,
-    template: `%s | ${SITE_NAME}`,
-  },
+  metadataBase: new URL(SITE_URL),
+  title: { default: SITE_NAME, template: `%s | ${SITE_NAME}` },
+  description: SITE_DESCRIPTION,
+  robots: { index: true, follow: true },
+  openGraph: { siteName: SITE_NAME, type: "website", locale: "en_US" },
+  twitter: { card: "summary_large_image", creator: TWITTER_HANDLE },
 };
 
 export default function RootLayout({

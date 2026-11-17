@@ -11,6 +11,9 @@ import { Separator } from "@/components/ui/Separator";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { ProblemOfTheWeek } from "@/components/ProblemOfTheWeek";
 import type { ArticleWithAuthor, Category } from "@/schema/types";
+import { createMetadata } from "@/lib/metadata";
+import { SITE_DESCRIPTION } from "@/lib/constants";
+
 
 // Revalidate the homepage at most once per day.
 export const revalidate = 86400;
@@ -18,6 +21,11 @@ export const revalidate = 86400;
 /* ═══════════════════════════════════════════════════════════════════════
    CONTENT PILLARS DATA
    ═══════════════════════════════════════════════════════════════════════ */
+export const metadata = createMetadata({
+  title: "Mathematics & Scientific Research",
+  description: SITE_DESCRIPTION,
+  path: "/",
+});
 
 const HERO_FORMULA = "e^{i\\pi} + 1 = 0";
 
@@ -94,12 +102,12 @@ export default async function HomePage() {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: "MathLumen",
-    url: "https://mathlumen.com",
+    url: "https://www.mathlumen.com",
     description:
       "A scholarly mathematics publication exploring the beauty, history, and applications of mathematics.",
     potentialAction: {
       "@type": "SearchAction",
-      target: "https://mathlumen.com/search?q={search_term_string}",
+      target: "https://www.mathlumen.com/search?q={search_term_string}",
       "query-input": "required name=search_term_string",
     },
   };

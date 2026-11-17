@@ -3,7 +3,7 @@
 export const SITE_NAME = "MathLumen";
 export const SITE_DESCRIPTION =
   "MathLumen publishes rigorous, beautifully written articles on pure and applied mathematics, the history of math, and the deep mathematics powering modern AI.";
-export const SITE_URL = "https://mathlumen.com";
+export const SITE_URL = "https://www.mathlumen.com";
 export const TWITTER_HANDLE = "@MathLumen";
 export const GITHUB_URL = "https://github.com/MathLumen";
 export const YOUTUBE_URL = "https://www.youtube.com/@TheMathLumen";
