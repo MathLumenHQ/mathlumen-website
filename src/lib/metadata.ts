@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { SITE_NAME, SITE_URL, TWITTER_HANDLE } from "./constants";
 
 interface CreateMetadataOptions {
-  /** Page title (will be appended with site name) */
+  /** Page title; the root layout appends the site name once. */
   title: string;
   /** Page description for SEO */
   description: string;
@@ -14,6 +14,12 @@ interface CreateMetadataOptions {
   type?: "website" | "article";
   /** Search engine indexing directives */
   robots?: Metadata["robots"];
+  /** Publication date for article Open Graph metadata. */
+  publishedTime?: string;
+  /** Last substantive modification date for article Open Graph metadata. */
+  modifiedTime?: string;
+  /** Author page URLs for article Open Graph metadata. */
+  authors?: string[];
 }
 
 /**
@@ -27,12 +33,17 @@ export function createMetadata({
   path,
   type = "website",
   robots,
+  publishedTime,
+  modifiedTime,
+  authors,
 }: CreateMetadataOptions): Metadata {
   const url = `${SITE_URL}${path}`;
   const ogImage = image ?? `${SITE_URL}/opengraph-image`;
 
   return {
-    title: `${title} | ${SITE_NAME}`,
+    // The root layout owns the title template, so child titles must not
+    // append the site name here or it appears twice in the document title.
+    title,
     description,
     robots: robots ?? {
       index: true,
@@ -58,6 +69,13 @@ export function createMetadata({
         },
       ],
       type,
+      ...(type === "article"
+        ? {
+            publishedTime,
+            modifiedTime,
+            authors,
+          }
+        : {}),
     },
     twitter: {
       card: "summary_large_image",

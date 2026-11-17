@@ -1,0 +1,154 @@
+---
+title: "Weight-Space Programming: What Editing 0.016% of a Network Actually Does"
+subtitle: "A rank-one edit lifted a small model from 7.9% to 48.1% on MATH-500, and the arithmetic says it mostly removed a defect"
+slug: weight-space-programming-016-percent-edit
+category: ai-ml
+excerpt: "A rank-one edit changed just 0.016% of an LLM's weights and dramatically improved benchmark completion. Explore weight-space programming, reasoning loops, and why restoring behaviour is not the same as adding capability."
+publishedAt: "2026-11-14"
+readTimeMinutes: 9
+seoTitle: "Weight-Space Programming: How Rank-One Editing Changes LLMs"
+metaDescription: "A close mathematical reading of the 0.016% Qwen3.5-0.8B weight edit: rank-one updates, reasoning loops, benchmark results, and what the evidence does—and does not—show."
+tags: [weight-space-programming, model-editing, rank-one-updates, reasoning-loops, mechanistic-interpretability, qwen]
+coverImageUrl: "https://ik.imagekit.io/netrv2whci/mathlumen/article-covers/weight-space-programming-016-percent-edit.png"
+coverImageAlt: "Conceptual illustration of a neural network weight matrix with a highlighted rank-one update"
+---
+
+An editor model targeted 131,072 weight entries in a language model of roughly 800 million parameters, and the target's reported MATH-500 accuracy rose from 7.9% to 48.1%. The claim comes from ["Sparks of Weight-Space Programming"](https://rikiyat.github.io/blog/weight-space-programming/) by Takehi, Teoh, Zhang and Khattab (MIT CSAIL, 2 November 2026), an author-reported research blog post rather than a peer-reviewed paper. The authors have also released [the experiment logs and edit files](https://github.com/RikiyaT/lm_understand-logs), and the resulting [edited Qwen3.5-0.8B checkpoint](https://huggingface.co/RikiyaT/Qwen3.5-0.8B-weight-space-programming) is publicly available. Read quickly, it suggests that a few thousand weights encode mathematical ability. The numbers support a narrower statement: a rank-one change to two MLP layers removed a failure mode, and that failure mode was hiding most of what the model could already do. We reconstruct the linear algebra of the edit, check the arithmetic implied by the post's table, and separate what is established from what is not.
+
+## The Protocol: What "No Training" Means
+
+The target is [Qwen3.5-0.8B](https://huggingface.co/Qwen/Qwen3.5-0.8B): hidden size $d = 1024$, 24 layers, feed-forward width $m = 3584$, tied embeddings over 248,320 tokens, and a layout of six repeats of three Gated DeltaNet blocks followed by one Gated Attention block, each followed by an FFN, according to the model card. The editor, GPT-6 Astra (API-only), worked in a Python kernel with access to the weights. It was given a budget of 10, 25 or 50 forward passes of the target, with an average batch of 64 sequences (maximum 512) drawn from GSM8K and MATH *training* prompts. There were no gradients and no training loop.
+
+The reported results, edited model versus base:
+
+- Base: MATH-500 7.9, GSM8K 13.8, IFEval 21.0, 93.0% of generations hit the token limit.
+- 10 passes: 12.3 / 25.7 / 49.0, with 87.2% hitting the limit.
+- 25 passes: 14.1 / 25.1 / 39.9, with 86.4% hitting the limit.
+- 50 passes: 48.1 / 67.1 / 62.3, with 33.1% hitting the limit.
+
+"No gradients" is not "no feedback". Fifty passes at an average of 64 sequences is on the order of 3,000 observed generations, and the editor chooses each probe after seeing earlier outputs. This is closer in spirit to adaptive black-box or zeroth-order search than to writing weights from a specification. It is not, on the evidence reported, an implementation of [MeZO](https://arxiv.org/abs/2305.17333): MeZO is a specific memory-efficient zeroth-order optimizer, whereas the blog describes an LLM choosing weight edits after inspecting sampled outputs. The budget also matters: 10 and 25 passes barely moved MATH-500, then 50 passes produced a jump of 34 points. IFEval is non-monotone across budgets (49.0, 39.9, 62.3), which is what noise from a single reported run looks like; we found no seeds or confidence intervals.
+
+## The Geometry of the Edit
+
+Let a layer's down projection be $W \in \mathbb{R}^{d \times m}$ and let $h \in \mathbb{R}^m$ be the gated hidden activation, so the MLP writes $y = Wh$ into the residual stream. The post says one direction, written by the MLPs of layers 15 and 19, is subtracted from 64 output columns in each. We read "output columns" as columns of the down projection. The count then matches the reported total exactly, which is a consistency check on this reading:
+
+$$
+2 \times 64 \times 1024 = 131{,}072 \approx 1.64 \times 10^{-4} \times (8 \times 10^{8}).
+$$
+
+This is 0.0164% of 800 million, or 0.0146% if one uses the roughly 0.9 billion parameters listed on the model card, consistent with the post's 0.016%.
+
+**General form.** Let $S \subset \{1,\dots,m\}$ with $|S| = 64$, let $u \in \mathbb{R}^d$ be a unit vector, and let $a \in \mathbb{R}^m$ be supported on $S$. Any edit that subtracts multiples of $u$ from the columns in $S$ has the form
+
+$$
+W' = W - u\,a^\top .
+$$
+
+Then
+
+$$
+\begin{align*}
+W'h &= Wh - u\,(a^\top h) \\
+    &= Wh - u \sum_{j \in S} a_j h_j .
+\end{align*}
+$$
+
+Three consequences follow directly.
+
+1. $\Delta W = -u a^\top$ is an outer product, so $\operatorname{rank}(\Delta W) = 1$ per layer.
+2. The layer's output changes only along the fixed direction $u$, by a scalar that depends on the 64 selected neurons alone. For any $v \perp u$, $v^\top W' h = v^\top W h - (v^\top u)(a^\top h) = v^\top W h$.
+3. Exactly $|S| \cdot d = 65{,}536$ entries change per layer, provided every $a_j \neq 0$.
+
+**A concrete instance.** A related projection operation appears in [Arditi et al.'s study of the refusal direction](https://arxiv.org/abs/2406.11717). Their work studies removing a direction from residual-stream activations and the relevant weight writers; it is not the same experiment as editing only 64 selected columns of one MLP down-projection. The following formula is a useful mathematical analogue for a selected set of columns, not a claim that Arditi et al. used this exact restricted edit:
+
+$$
+W'_{:,j} = W_{:,j} - c\, u\,(u^\top W_{:,j}), \qquad j \in S .
+$$
+
+The component of the selected neurons' contribution along $u$ becomes $(1 - c)\,u^\top W_{:,S}\, h_S$. At $c = 1$ it is removed; at $c > 1$ its sign is reversed. The post's excerpt does not give $c$ or $a$, so which of these regimes the editor found is **unverified**; the algebra above holds for all of them.
+
+The following script checks the identities numerically for the $c = 1$ case, using random weights with the model's dimensions:
+
+```python
+import numpy as np
+
+rng = np.random.default_rng(0)
+d, m, k = 1024, 3584, 64
+
+W = rng.standard_normal((d, m)) / np.sqrt(m)
+u = rng.standard_normal(d); u /= np.linalg.norm(u)
+S = rng.choice(m, size=k, replace=False)
+
+W_new = W.copy()
+W_new[:, S] -= np.outer(u, u @ W[:, S])          # c = 1
+
+print(np.linalg.matrix_rank(W_new - W))           # 1
+print(np.count_nonzero(W_new - W), k * d)         # 65536 65536
+
+h = rng.standard_normal(m)
+v = rng.standard_normal(d); v -= u * (u @ v)      # orthogonal to u
+print(np.isclose(v @ (W_new @ h), v @ (W @ h)))   # True
+```
+
+The script verifies the structure of the edit, not the editor's actual coefficients, which are not public in the material we reviewed.
+
+## Why 0.016% Is Not "Sparse" in the Usual Sense
+
+The edit touches $64/3584 \approx 1.79\%$ of the columns in each layer, and within a touched column all 1,024 entries change. It is sparse across columns and dense within them. Counting changed scalars is the wrong measure of its complexity, because the changes are tightly coupled. A rank-one matrix $u a^\top$ with $a$ supported on 64 coordinates has at most $d + k - 1 = 1024 + 64 - 1 = 1{,}087$ continuous degrees of freedom when $u$ is treated as a unit vector (the sign/scale convention removes one degree of freedom), plus the discrete choice of $S$. Across two layers that is about 2,200 free continuous parameters, against 131,072 modified weights.
+
+This matters for how we read "weight-space programming". The number of edited weights is a storage statistic. The informative quantity is the dimension of the family the editor searched: a direction in $\mathbb{R}^{1024}$, a coefficient pattern over 64 neurons, and two layers. A search over a family this small is feasible with a few dozen probes, and a rank-one MLP edit is also the structure that ROME (Meng et al., 2022) and MEMIT used to change factual associations. What differs here is the target: a behavior, not a fact.
+
+## Loops as a Learning Error
+
+[Pipis et al. ("Wait, Wait, Wait... Why Do Reasoning Models Loop?")](https://arxiv.org/abs/2512.12895), published in the ICML 2026 programme, argue that loops in reasoning models can arise from errors in learning, and that changing temperature can reduce looping without fixing the underlying learning errors. Arditi et al. showed that refusal behavior is mediated by a single residual-stream direction that can be removed by a rank-one weight orthogonalization. Combining the two gives a testable hypothesis: if a loop-sustaining behavior is mediated by a low-dimensional direction, a rank-one write can suppress it.
+
+The hypothesis fits the data, but we have not seen the post show it. The excerpt we reviewed does not interpret $u$ as a "loop direction", so that reading is ours. The [Qwen3.5-0.8B model card](https://huggingface.co/Qwen/Qwen3.5-0.8B) documents the model architecture and usage recommendations. The exact sampling settings used in each experiment should be taken from the [published experiment logs](https://github.com/RikiyaT/lm_understand-logs/tree/main/exp8_math), rather than inferred from general model-card recommendations.
+
+## The Baseline Problem
+
+The base model's 93.0% hit-limit rate, with a limit of 32,768 tokens, is the most important number in the table. In the post's first 96 practice answers, 85 hit the limit. A base model that exhausts 32k tokens on most problems is in a documented defective operating mode, so 7.9% does not measure what Qwen3.5-0.8B can do.
+
+The completion rates give a cleaner view:
+
+$$
+\text{finished}_{\text{base}} = 100 - 93.0 = 7.0\%, \qquad \text{finished}_{\text{edit}} = 100 - 33.1 = 66.9\%,
+$$
+
+$$
+\frac{66.9}{7.0} \approx 9.6, \qquad \frac{48.1}{7.9} \approx 6.1 .
+$$
+
+Completion rises about 9.6-fold while accuracy rises about 6.1-fold, which is the signature of an intervention that mostly lets answers finish. If truncated answers scored zero, the edited model would be correct on $48.1/66.9 \approx 71.9\%$ of the answers it finishes. The base figures cannot follow the same rule: $7.9\% > 7.0\%$ means either truncated outputs can still be scored (for example by extracting a final answer from partial text) or the hit-limit column was measured on a different prompt set. Which one holds is **unverified** and can be checked in the post's evaluation code.
+
+A later [public checkpoint card](https://huggingface.co/RikiyaT/Qwen3.5-0.8B-weight-space-programming) reports an independent evaluation of the edited checkpoint on all 500 MATH-500 problems with four samples per problem: 51.0% accuracy and 31.6% token-limit hits. Its base-model comparison is only a 25-problem smoke test (5.0% accuracy and 95% token-limit hits), so it is not a matched full-benchmark comparison. The independent run strengthens confidence that the edited checkpoint can reproduce a result near the blog's 48.1%, but it does not establish that the edit outperforms a properly configured base model under matched settings.
+
+## What the Gemma Control Shows
+
+The authors ran the same procedure on Gemma 3 270M, where only 8.5% of generations hit the token limit. MATH-500 moved from 6.8 to 7.0, 7.6, 7.7 and 7.0 across the edits. At $n = 500$ and $p \approx 0.07$, the binomial standard error is $\sqrt{p(1-p)/n} \approx 1.1$ points, so none of these changes is distinguishable from zero. The authors summarize the result: "Editing weights could remove an obstacle that hid an ability, but it could not add an ability the model lacked."
+
+This is the strongest evidence in the post, because it is a control with an opposing prediction. The edit's leverage scales with the size of the obstacle: large for a model that loops 93% of the time, nil for a model that rarely does. The same standard-error calculation at $p \approx 0.48$ gives roughly 2.2 points for the headline result, so the 34-point jump is not noise; the open question is only what it is a jump relative to.
+
+The post's other experiments are additional demonstrations of reading and writing weights in small settings: identifying a game from 17,253 weights, matching induction heads to ground truth in 7.2M-parameter character models, and steering a Kinetix agent by editing 3.5% of its weights (6,073 of 171,664) from 0% to 100% success. They also report a limit: a sycophancy-related behavior was invisible from the weights alone and was found through attention patterns.
+
+## What Is Not Established
+
+- **The coefficient and the 64 columns.** How $c$ (or $a$) was chosen and how $S$ was selected are not reported in the material we reviewed.
+- **Layer indexing.** If layers are zero-indexed, 15 and 19 are Gated Attention positions in the card's layout (attention blocks at 3, 7, 11, 15, 19, 23), so the edited MLPs would follow attention blocks. The post's convention is **unverified**.
+- **Scoring of truncated answers** and which benchmark the hit-limit column covers.
+- **Sampling settings, seeds and variance** across runs. The reported figures are single runs.
+- **The thinking-off baseline.** The comparison that decides whether the edit exceeds ordinary performance has not been reproduced by a source we could verify.
+- **Peer review.** The post is a blog report with public logs, not a reviewed paper.
+
+The defensible reading is that a two-layer, rank-one, 64-neuron edit found by roughly 50 forward-pass probes can suppress a failure mode that dominates a small model's reasoning outputs. That is a real and checkable result about the geometry of failure modes. It is not evidence that mathematical ability is stored in 0.016% of a network.
+
+## References
+
+- Takehi, R., Teoh, J., Zhang, A. and Khattab, O. (2026). ["Sparks of Weight-Space Programming: LLMs can natively read & write neural network weights"](https://rikiyat.github.io/blog/weight-space-programming/), 2 November 2026. [Full experiment logs and edit files](https://github.com/RikiyaT/lm_understand-logs), especially [Experiment 8: Math](https://github.com/RikiyaT/lm_understand-logs/tree/main/exp8_math).
+- [Qwen/Qwen3.5-0.8B model card](https://huggingface.co/Qwen/Qwen3.5-0.8B). [Edited checkpoint and independent evaluation notes](https://huggingface.co/RikiyaT/Qwen3.5-0.8B-weight-space-programming).
+- Pipis, C. et al. (2025). ["Wait, Wait, Wait... Why Do Reasoning Models Loop?"](https://arxiv.org/abs/2512.12895). ICML 2026.
+- Arditi, A. et al. (2024). ["Refusal in Language Models Is Mediated by a Single Direction"](https://arxiv.org/abs/2406.11717). NeurIPS 2024.
+- Meng, K. et al. (2022). ["Locating and Editing Factual Associations in GPT" (ROME)](https://arxiv.org/abs/2202.05262). [Project page and code](https://rome.baulab.info/).
+- Meng, K. et al. (2022). ["Mass-Editing Memory in a Transformer" (MEMIT)](https://arxiv.org/abs/2210.07229). [Project page and code](https://memit.baulab.info/).
+- Ilharco, G. et al. (2022). ["Editing Models with Task Arithmetic"](https://arxiv.org/abs/2212.04089).
+- Malladi, S. et al. (2023). ["Fine-Tuning Language Models with Just Forward Passes" (MeZO)](https://arxiv.org/abs/2305.17333). NeurIPS 2023.
+

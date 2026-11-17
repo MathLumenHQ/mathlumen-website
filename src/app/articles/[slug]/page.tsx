@@ -22,6 +22,7 @@ import { SidebarNewsletter } from "@/components/sidebar/SidebarNewsletter";
 import { ToolsPromo } from "@/components/sidebar/ToolsPromo";
 import { AdSlot } from "@/components/sidebar/AdSlot";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { ViewTracker } from "./ViewTracker";
 import { PowSolutionDownload } from "@/components/article/PowSolutionDownload";
 import type { Category } from "@/schema/types";
@@ -43,6 +44,7 @@ export const dynamicParams = true;
 // React memoizes this lookup for a single server render, so generateMetadata()
 // and ArticlePage() do not query the same article twice.
 const getCachedArticleBySlug = cache(getArticleBySlug);
+const getCachedArticleContent = cache(getArticleContent);
 
 interface ArticlePageProps {
   params: Promise<{ slug: string }>;
@@ -83,12 +85,24 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
     });
   }
 
+  const mdxResult = await getCachedArticleContent(slug);
+  const seoTitle = mdxResult?.frontmatter.seoTitle?.trim() || article.title;
+  const description =
+    mdxResult?.frontmatter.metaDescription?.trim() || article.excerpt;
+
   return createMetadata({
-    title: article.title,
-    description: article.excerpt,
+    title: seoTitle,
+    description,
     image: article.coverImageUrl ?? undefined,
     path: `/articles/${slug}`,
     type: "article",
+    publishedTime: article.publishedAt
+      ? new Date(article.publishedAt).toISOString()
+      : undefined,
+    modifiedTime: article.updatedAt
+      ? new Date(article.updatedAt).toISOString()
+      : undefined,
+    authors: [`${SITE_URL}/authors/${article.author.slug}`],
   });
 }
 
@@ -107,7 +121,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   }
 
   const [mdxResult, internalLinks] = await Promise.all([
-    getArticleContent(slug),
+    getCachedArticleContent(slug),
     getInternalLinks(article.slug, article.category, article.tags ?? []),
   ]);
 
@@ -115,44 +129,55 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   const faqPairs = rawBody ? extractFaqPairs(rawBody) : [];
   const articleUrl = `${SITE_URL}/articles/${slug}`;
 
+  const seoTitle = mdxResult?.frontmatter.seoTitle?.trim() || article.title;
+  const seoDescription =
+    mdxResult?.frontmatter.metaDescription?.trim() || article.excerpt;
+  const articleImage = article.coverImageUrl ?? undefined;
+  const publishedAt = article.publishedAt
+    ? new Date(article.publishedAt).toISOString()
+    : undefined;
+  const modifiedAt = article.updatedAt
+    ? new Date(article.updatedAt).toISOString()
+    : publishedAt;
+
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "Article",
+    "@type": "BlogPosting",
     headline: article.title,
-    description: article.excerpt,
+    alternativeHeadline: seoTitle !== article.title ? seoTitle : undefined,
+    description: seoDescription,
+    inLanguage: "en",
+    articleSection: CATEGORY_LABELS[article.category] ?? article.category,
+    keywords: article.tags?.length ? article.tags : undefined,
     author: {
       "@type": "Person",
       name: article.author.name,
       url: `${SITE_URL}/authors/${article.author.slug}`,
     },
-    datePublished: article.publishedAt
-      ? new Date(article.publishedAt).toISOString()
-      : undefined,
+    datePublished: publishedAt,
+    dateModified: modifiedAt,
     publisher: {
       "@type": "Organization",
       name: "MathLumen",
       url: SITE_URL,
       logo: {
         "@type": "ImageObject",
-        url: `${SITE_URL}/images/og-default.svg`,
+        url: `${SITE_URL}/images/mathlumen-logo.svg`,
+        width: 512,
+        height: 512,
       },
     },
-    mainEntityOfPage: articleUrl,
-    image: article.coverImageUrl ?? undefined,
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": articleUrl,
+    },
+    image: articleImage ? [articleImage] : undefined,
   };
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
-      {faqPairs.length > 0 && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(buildFaqSchema(faqPairs)) }}
-        />
-      )}
+      <JsonLd data={jsonLd} />
+      {faqPairs.length > 0 && <JsonLd data={buildFaqSchema(faqPairs)} />}
       <ProgressBar />
       <ViewTracker articleId={article.id} />
 
@@ -284,7 +309,10 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             {article.coverImageUrl && (
               <CoverImage
                 src={article.coverImageUrl}
-                alt={article.title}
+                alt={
+                  mdxResult?.frontmatter.coverImageAlt?.trim() ||
+                  `Illustration for ${article.title}`
+                }
                 caption={mdxResult?.frontmatter.coverImageCaption}
                 category={article.category}
               />

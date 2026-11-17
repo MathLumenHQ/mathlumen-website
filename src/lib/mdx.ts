@@ -47,6 +47,12 @@ interface ArticleFrontmatter {
   readTimeMinutes: number;
   tags: string[];
   coverImageUrl?: string;
+  /** Search-result title; falls back to the article title. */
+  seoTitle?: string;
+  /** Search-result description; falls back to the article excerpt. */
+  metaDescription?: string;
+  /** Descriptive alternative text for the cover image. */
+  coverImageAlt?: string;
   /**
    * Photo credit or caption for the cover image.
    * Displayed below the hero image on the article page.

@@ -10,8 +10,8 @@ export interface InternalLink {
 
 /**
  * Return up to 3 internal link suggestions for the "Also on MathLumen" block:
- *   1. A different article in the same category  (reinforces topical depth)
- *   2. An article sharing a tag                  (semantic cross-linking)
+ *   1. An article sharing a tag                  (semantic cross-linking)
+ *   2. A different article in the same category  (topical fallback)
  *   3. An article from a different category      (cross-pollination / discovery)
  *
  * Results are de-duplicated and never include the current article.
@@ -33,30 +33,7 @@ export async function getInternalLinks(
     | "news";
 
   try {
-    // ── 1. Same category ──────────────────────────────────────────────────
-    const [sameCategory] = await db
-      .select({
-        slug: articles.slug,
-        title: articles.title,
-        category: articles.category,
-      })
-      .from(articles)
-      .where(
-        and(
-          eq(articles.isPublished, true),
-          eq(articles.category, cat),
-          ne(articles.slug, currentSlug)
-        )
-      )
-      .orderBy(desc(articles.publishedAt))
-      .limit(1);
-
-    if (sameCategory) {
-      results.push(sameCategory);
-      usedSlugs.push(sameCategory.slug);
-    }
-
-    // ── 2. Shares a tag ───────────────────────────────────────────────────
+    // ── 1. Shares a tag ───────────────────────────────────────────────────
     if (tags.length > 0) {
       const tagOverlap = sql`${articles.tags} && ARRAY[${sql.join(
         tags.map((t) => sql`${t}`),
@@ -78,6 +55,32 @@ export async function getInternalLinks(
       if (sharedTag) {
         results.push(sharedTag);
         usedSlugs.push(sharedTag.slug);
+      }
+    }
+
+    // ── 2. Same category ──────────────────────────────────────────────────
+    // Use this only as a fallback after a semantic tag match.
+    if (results.length < 2) {
+      const [sameCategory] = await db
+        .select({
+          slug: articles.slug,
+          title: articles.title,
+          category: articles.category,
+        })
+        .from(articles)
+        .where(
+          and(
+            eq(articles.isPublished, true),
+            eq(articles.category, cat),
+            ...usedSlugs.map((s) => ne(articles.slug, s))
+          )
+        )
+        .orderBy(desc(articles.publishedAt))
+        .limit(1);
+
+      if (sameCategory) {
+        results.push(sameCategory);
+        usedSlugs.push(sameCategory.slug);
       }
     }
 
