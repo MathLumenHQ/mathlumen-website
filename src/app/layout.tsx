@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Crimson_Pro, DM_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import { Navigation } from "@/components/layout/Navigation";
 import { Footer } from "@/components/layout/Footer";
 import { SearchDialog } from "@/components/forms/SearchDialog";
@@ -12,25 +12,43 @@ import { SITE_NAME, SITE_DESCRIPTION, SITE_URL, TWITTER_HANDLE } from "@/lib/con
 import "@/styles/globals.css";
 import "katex/dist/katex.min.css";
 
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  weight: ["400", "700", "900"],
+
+const playfair = localFont({
+  src: "./fonts/PlayfairDisplay-Variable.ttf",
+  weight: "400 900",
+  style: "normal",
   variable: "--font-display",
   display: "swap",
   preload: true,
 });
 
-const crimson = Crimson_Pro({
-  subsets: ["latin"],
-  weight: ["300", "400", "600"],
+const crimson = localFont({
+  src: "./fonts/CrimsonPro-Variable.ttf",
+  weight: "200 900",
+  style: "normal",
   variable: "--font-body",
   display: "swap",
   preload: true,
 });
 
-const dmMono = DM_Mono({
-  subsets: ["latin"],
-  weight: ["300", "400", "500"],
+const dmMono = localFont({
+  src: [
+    {
+      path: "./fonts/DMMono-Light.ttf",
+      weight: "300",
+      style: "normal",
+    },
+    {
+      path: "./fonts/DMMono-Regular.ttf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "./fonts/DMMono-Medium.ttf",
+      weight: "500",
+      style: "normal",
+    },
+  ],
   variable: "--font-mono",
   display: "swap",
   preload: true,
