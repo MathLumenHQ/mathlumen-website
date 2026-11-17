@@ -6,7 +6,7 @@ const envSchema = z.object({
   DIRECT_URL: z.string().url("DIRECT_URL must be a valid PostgreSQL URL").optional(),
   NEXT_PUBLIC_SUPABASE_URL: z.string().url("NEXT_PUBLIC_SUPABASE_URL must be a valid URL").optional(),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1).optional(),
-  NEXT_PUBLIC_APP_URL: z.string().url("NEXT_PUBLIC_APP_URL must be a valid URL").default(SITE_URL),
+  APP_URL: z.string().url("APP_URL must be a valid URL").default(SITE_URL),
   NEXT_PUBLIC_SITE_NAME: z.string().min(1).default(SITE_NAME),
   NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT: z.string().url().optional(),
   IMAGEKIT_PUBLIC_KEY: z.string().startsWith("public_").optional(),

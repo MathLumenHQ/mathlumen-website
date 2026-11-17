@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { env } from "@/lib/env";
 import { applyRateLimit } from "@/lib/rate-limit";
 
-const allowedOrigin = new URL(env.NEXT_PUBLIC_APP_URL).origin;
+const allowedOrigin = new URL(env.APP_URL).origin;
 
 function getForwardedIp(request: NextRequest): string {
   const forwardedFor = request.headers.get("x-forwarded-for");
