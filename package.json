@@ -71,6 +71,7 @@
     "eslint": "9.22.0",
     "eslint-config-next": "16.1.0",
     "jsdom": "^28.1.0",
+    "markdownlint-cli": "^0.50.0",
     "postcss": "8.5.3",
     "prettier": "3.5.3",
     "tailwindcss": "4.1.3",
