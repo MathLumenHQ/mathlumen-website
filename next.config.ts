@@ -38,14 +38,25 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  async rewrites() {
-    return [
-      {
-        source: "/pow/:publicId.pdf",
-        destination: "/pow-file/:publicId",
-      },
-    ];
-  },
+ 
+async redirects() {
+  return [
+    {
+      source: "/pow",
+      destination: "/pow/archive",
+      permanent: true,
+    },
+  ];
+},
+
+async rewrites() {
+  return [
+    {
+      source: "/pow/:publicId.pdf",
+      destination: "/pow-file/:publicId",
+    },
+  ];
+},
   images: {
     formats: ["image/avif", "image/webp"],
     minimumCacheTTL: 2592000, // 30 days
